@@ -1,0 +1,142 @@
+{
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "WeFile API",
+    "version": "0.0.1"
+  },
+  "basePath": "/api/v1",
+  "paths": {
+    "/user/sign_in": {
+      "post": {
+        "description": "用户登录",
+        "tags": [
+          "User"
+        ],
+        "summary": "SignIn",
+        "operationId": "SignIn",
+        "responses": {
+          "200": {
+            "$ref": "#/responses/User"
+          },
+          "403": {
+            "$ref": "#/responses/ForbiddenResponse"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/user/sign_up": {
+      "post": {
+        "description": "注册用户",
+        "tags": [
+          "User"
+        ],
+        "summary": "SignUp",
+        "operationId": "SignUp",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "用户名 长度小于 64",
+            "name": "Name",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "密码 长度小于 64",
+            "name": "Password",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "邮箱 需要检查格式是否正确",
+            "name": "Email",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "验证码 邮件拿验证码",
+            "name": "VerifyCode",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "个人介绍",
+            "name": "Profile",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/User"
+          },
+          "409": {
+            "$ref": "#/responses/ConflictError"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      }
+    }
+  },
+  "responses": {
+    "ConflictError": {
+      "description": "Conflict Error",
+      "headers": {
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "ErrorResponse": {
+      "description": "Error Message",
+      "headers": {
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "ForbiddenResponse": {
+      "description": "Forbidden Error",
+      "headers": {
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "NotFoundError": {
+      "description": "NotFound Error",
+      "headers": {
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "User": {
+      "headers": {
+        "Email": {
+          "type": "string"
+        },
+        "ID": {
+          "type": "string"
+        },
+        "Name": {
+          "type": "string"
+        },
+        "Profile": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
