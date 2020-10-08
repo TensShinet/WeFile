@@ -1,4 +1,10 @@
 {
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
   "schemes": [
     "http",
     "https"
@@ -10,6 +16,24 @@
   },
   "basePath": "/api/v1",
   "paths": {
+    "/role/all": {
+      "get": {
+        "description": "获得所有角色",
+        "tags": [
+          "Role"
+        ],
+        "summary": "GetAllRoles",
+        "operationId": "GetAllRoles",
+        "responses": {
+          "200": {
+            "$ref": "#/responses/RoleList"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      }
+    },
     "/user/sign_in": {
       "post": {
         "description": "用户登录",
@@ -18,9 +42,35 @@
         ],
         "summary": "SignIn",
         "operationId": "SignIn",
+        "parameters": [
+          {
+            "x-go-name": "Body",
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "email",
+                "password"
+              ],
+              "properties": {
+                "email": {
+                  "description": "邮箱",
+                  "type": "string",
+                  "x-go-name": "Email"
+                },
+                "password": {
+                  "description": "密码",
+                  "type": "string",
+                  "x-go-name": "Password"
+                }
+              }
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "$ref": "#/responses/User"
+            "$ref": "#/responses/UserResponse"
           },
           "403": {
             "$ref": "#/responses/ForbiddenResponse"
@@ -33,7 +83,7 @@
     },
     "/user/sign_up": {
       "post": {
-        "description": "注册用户",
+        "description": "用户注册",
         "tags": [
           "User"
         ],
@@ -41,43 +91,19 @@
         "operationId": "SignUp",
         "parameters": [
           {
-            "type": "string",
-            "description": "用户名 长度小于 64",
-            "name": "Name",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "string",
-            "description": "密码 长度小于 64",
-            "name": "Password",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "string",
-            "description": "邮箱 需要检查格式是否正确",
-            "name": "Email",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "string",
-            "description": "验证码 邮件拿验证码",
-            "name": "VerifyCode",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "string",
-            "description": "个人介绍",
-            "name": "Profile",
-            "in": "query"
+            "x-go-name": "User",
+            "description": "新用户",
+            "name": "user",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/NewUser"
+            }
           }
         ],
         "responses": {
           "200": {
-            "$ref": "#/responses/User"
+            "$ref": "#/responses/UserResponse"
           },
           "409": {
             "$ref": "#/responses/ConflictError"
@@ -87,6 +113,108 @@
           }
         }
       }
+    }
+  },
+  "definitions": {
+    "NewUser": {
+      "type": "object",
+      "required": [
+        "name",
+        "password",
+        "email",
+        "verify_code",
+        "RoleID"
+      ],
+      "properties": {
+        "RoleID": {
+          "description": "角色 ID",
+          "type": "integer",
+          "format": "int64"
+        },
+        "email": {
+          "description": "邮箱\n\n邮箱唯一",
+          "type": "string",
+          "x-go-name": "Email"
+        },
+        "name": {
+          "description": "用户名",
+          "type": "string",
+          "maxLength": 64,
+          "minLength": 10,
+          "x-go-name": "Name"
+        },
+        "password": {
+          "description": "密码",
+          "type": "string",
+          "maxLength": 64,
+          "minLength": 10,
+          "x-go-name": "Password"
+        },
+        "profile": {
+          "description": "个人介绍",
+          "type": "string",
+          "x-go-name": "Profile"
+        },
+        "verify_code": {
+          "description": "验证码\n\n邮件拿验证码",
+          "type": "string",
+          "x-go-name": "VerifyCode"
+        }
+      },
+      "x-go-package": "github.com/TensShinet/WeFile/service/base/handler"
+    },
+    "Role": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "role_id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "RoleID"
+        }
+      },
+      "x-go-package": "github.com/TensShinet/WeFile/service/base/handler"
+    },
+    "User": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "description": "邮箱",
+          "type": "string",
+          "x-go-name": "Email"
+        },
+        "name": {
+          "description": "用户名",
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "profile": {
+          "description": "个人简介",
+          "type": "string",
+          "x-go-name": "Profile"
+        },
+        "role_id": {
+          "description": "角色 id",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "RoleID"
+        },
+        "role_name": {
+          "description": "角色名",
+          "type": "string",
+          "x-go-name": "RoleName"
+        },
+        "user_id": {
+          "description": "用户 id",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "UserID"
+        }
+      },
+      "x-go-package": "github.com/TensShinet/WeFile/service/base/handler"
     }
   },
   "responses": {
@@ -122,19 +250,23 @@
         }
       }
     },
-    "User": {
+    "RoleList": {
+      "description": "Role List",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/Role"
+        }
+      }
+    },
+    "UserResponse": {
+      "schema": {
+        "$ref": "#/definitions/User"
+      },
       "headers": {
-        "Email": {
-          "type": "string"
-        },
-        "ID": {
-          "type": "string"
-        },
-        "Name": {
-          "type": "string"
-        },
-        "Profile": {
-          "type": "string"
+        "cookie": {
+          "type": "string",
+          "description": "in: header"
         }
       }
     }
