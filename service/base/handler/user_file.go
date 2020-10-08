@@ -7,10 +7,8 @@ import (
 
 // swagger:model File
 type File struct {
-	// 用户 id
-	UserID string `json:"user_id"`
 	// 文件 id 用于下载
-	FileID string `json:"file_id"`
+	FileID int64 `json:"file_id"`
 	// 文件名
 	FileName string `json:"file_name"`
 	// 上传时间
@@ -23,13 +21,17 @@ type File struct {
 type GetUserFileListParam struct {
 	// 存储 session id
 	// Required: true
-	// in: header
 	Cookie string `json:"cookie"`
-	// 目录
-	// Required: true
-	// 比如 / /dir /dir1/dir2
 	// in: body
-	Directory string `json:"directory"`
+	Body struct {
+		// 目录
+		// Required: true
+		// 比如 / /dir /dir1/dir2
+		Directory string `json:"directory"`
+		// csrf token
+		// Required: true
+		Token string `json:"token"`
+	}
 }
 
 // File List
@@ -64,6 +66,24 @@ type AddressResponse struct {
 //       500: ErrorResponse
 func GetUserFileList(c *gin.Context) {}
 
+// swagger:parameters GetUploadAddress
+type GetUploadAddressParam struct {
+	Cookie string `json:"cookie"`
+	// in: body
+	Body struct {
+		// 文件名
+		// Required: true
+		FileName string `json:"file_name"`
+		// 目录
+		// 比如 / /dir /dir1/dir2
+		// Required: true
+		Directory string `json:"directory"`
+		// csrf Token
+		// Required: true
+		Token string `json:"token"`
+	}
+}
+
 // swagger:route GET /user/{id}/upload_address User GetUploadAddress
 //
 // GetUploadAddress
@@ -75,7 +95,24 @@ func GetUserFileList(c *gin.Context) {}
 //       500: ErrorResponse
 func GetUploadAddress(c *gin.Context) {}
 
-// swagger:route GET /user/{id}/download_address User GetUploadAddress
+// swagger:parameters GetDownloadAddress
+type GetDownloadAddressParam struct {
+	Cookie string `json:"cookie"`
+	// in: body
+	Body struct {
+		// 文件唯一 ID
+		// Required: true
+		FileID int64 `json:"file_id"`
+		// 文件名
+		// Required: true
+		FileName string `json:"file_name"`
+		// csrf Token
+		// Required: true
+		Token string `json:"token"`
+	}
+}
+
+// swagger:route POST /user/{id}/download_address User GetDownloadAddress
 //
 // GetDownloadAddress
 //

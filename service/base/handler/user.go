@@ -92,7 +92,6 @@ type SignInParam struct {
 // User
 // swagger:response UserResponse
 type UserResponse struct {
-	// in: header
 	Cookie string `json:"cookie"`
 	// in: body
 	User *User `json:"user"`

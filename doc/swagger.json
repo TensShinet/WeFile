@@ -16,6 +16,61 @@
   },
   "basePath": "/api/v1",
   "paths": {
+    "/Upload": {
+      "post": {
+        "description": "用户上传",
+        "tags": [
+          "File"
+        ],
+        "summary": "Upload",
+        "operationId": "Upload",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "采用 jwt 验证方式",
+            "name": "Authorization",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/UploadResponse"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/download": {
+      "post": {
+        "description": "用户下载",
+        "produces": [
+          "application/octect-stream"
+        ],
+        "tags": [
+          "File"
+        ],
+        "summary": "Download",
+        "operationId": "Download",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "采用 jwt 验证方式",
+            "name": "Authorization",
+            "in": "header"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/DownloadResponse"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      }
+    },
     "/role/all": {
       "get": {
         "description": "获得所有角色",
@@ -113,9 +168,175 @@
           }
         }
       }
+    },
+    "/user/{id}/download_address": {
+      "post": {
+        "description": "得到用户文件下载地址，并设置 jwt token",
+        "tags": [
+          "User"
+        ],
+        "summary": "GetDownloadAddress",
+        "operationId": "GetDownloadAddress",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Cookie",
+            "name": "cookie",
+            "in": "query"
+          },
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "file_id",
+                "file_name",
+                "token"
+              ],
+              "properties": {
+                "file_id": {
+                  "description": "文件唯一 ID",
+                  "type": "integer",
+                  "format": "int64",
+                  "x-go-name": "FileID"
+                },
+                "file_name": {
+                  "description": "文件名",
+                  "type": "string",
+                  "x-go-name": "FileName"
+                },
+                "token": {
+                  "description": "csrf Token",
+                  "type": "string",
+                  "x-go-name": "Token"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/AddressResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/user/{id}/file_list": {
+      "post": {
+        "description": "用户目录下的文件",
+        "tags": [
+          "User"
+        ],
+        "summary": "GetUserFileList",
+        "operationId": "GetUserFileList",
+        "responses": {
+          "200": {
+            "$ref": "#/responses/FileListResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/user/{id}/upload_address": {
+      "get": {
+        "description": "得到用户上传地址，并设置 jwt token",
+        "tags": [
+          "User"
+        ],
+        "summary": "GetUploadAddress",
+        "operationId": "GetUploadAddress",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Cookie",
+            "name": "cookie",
+            "in": "query"
+          },
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "file_name",
+                "directory",
+                "token"
+              ],
+              "properties": {
+                "directory": {
+                  "description": "目录\n比如 / /dir /dir1/dir2",
+                  "type": "string",
+                  "x-go-name": "Directory"
+                },
+                "file_name": {
+                  "description": "文件名",
+                  "type": "string",
+                  "x-go-name": "FileName"
+                },
+                "token": {
+                  "description": "csrf Token",
+                  "type": "string",
+                  "x-go-name": "Token"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/AddressResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      }
     }
   },
   "definitions": {
+    "File": {
+      "type": "object",
+      "properties": {
+        "file_id": {
+          "description": "文件 id 用于下载",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "FileID"
+        },
+        "file_name": {
+          "description": "文件名",
+          "type": "string",
+          "x-go-name": "FileName"
+        },
+        "is_directory": {
+          "description": "是否是目录",
+          "type": "boolean",
+          "x-go-name": "IsDirectory"
+        },
+        "upload_at": {
+          "description": "上传时间",
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "UploadAt"
+        }
+      },
+      "x-go-package": "github.com/TensShinet/WeFile/service/base/handler"
+    },
     "NewUser": {
       "type": "object",
       "required": [
@@ -167,10 +388,12 @@
       "type": "object",
       "properties": {
         "name": {
+          "description": "角色名",
           "type": "string",
           "x-go-name": "Name"
         },
         "role_id": {
+          "description": "角色 id",
           "type": "integer",
           "format": "int64",
           "x-go-name": "RoleID"
@@ -218,6 +441,24 @@
     }
   },
   "responses": {
+    "AddressResponse": {
+      "description": "Address",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "x-go-name": "Address"
+          }
+        }
+      },
+      "headers": {
+        "Authorization": {
+          "type": "string",
+          "description": "采用 jwt 的方法认证"
+        }
+      }
+    },
     "ConflictError": {
       "description": "Conflict Error",
       "headers": {
@@ -226,11 +467,38 @@
         }
       }
     },
+    "DownloadResponse": {
+      "description": "Download Response",
+      "headers": {
+        "Content-Disposition": {
+          "type": "string"
+        }
+      }
+    },
     "ErrorResponse": {
-      "description": "Error Message",
+      "description": "Sever Error",
       "headers": {
         "message": {
           "type": "string"
+        }
+      }
+    },
+    "FileListResponse": {
+      "description": "File List",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "directory_name": {
+            "type": "string",
+            "x-go-name": "DirectoryName"
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/File"
+            },
+            "x-go-name": "Files"
+          }
         }
       }
     },
@@ -259,14 +527,45 @@
         }
       }
     },
+    "UnauthorizedResponse": {
+      "description": "Unauthorized Error",
+      "headers": {
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "UploadResponse": {
+      "description": "Upload Response",
+      "headers": {
+        "file_id": {
+          "type": "integer",
+          "format": "int64",
+          "description": "文件 id 用于下载"
+        },
+        "file_name": {
+          "type": "string",
+          "description": "文件名"
+        },
+        "is_directory": {
+          "type": "boolean",
+          "description": "是否是目录"
+        },
+        "upload_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "上传时间"
+        }
+      }
+    },
     "UserResponse": {
+      "description": "User",
       "schema": {
         "$ref": "#/definitions/User"
       },
       "headers": {
         "cookie": {
-          "type": "string",
-          "description": "in: header"
+          "type": "string"
         }
       }
     }
