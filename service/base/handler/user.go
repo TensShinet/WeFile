@@ -89,6 +89,7 @@ type SignInParam struct {
 	} `json:"body"`
 }
 
+// User
 // swagger:response UserResponse
 type UserResponse struct {
 	// in: header

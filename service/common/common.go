@@ -1,6 +1,6 @@
 package common
 
-// Error Message
+// Sever Error
 //
 // swagger:response ErrorResponse
 type ErrorResponse struct {
@@ -25,5 +25,12 @@ type ConflictError struct {
 //
 // swagger:response ForbiddenResponse
 type ForbiddenResponse struct {
+	Message string `json:"message"`
+}
+
+// Unauthorized Error
+//
+// swagger:response UnauthorizedResponse
+type UnauthorizedResponse struct {
 	Message string `json:"message"`
 }
