@@ -15,7 +15,7 @@ type DownloadResponse struct {
 	ContentDisposition string `json:"Content-Disposition"`
 }
 
-// swagger:route POST /download File Download
+// swagger:route GET /download File Download
 //
 // Download
 //

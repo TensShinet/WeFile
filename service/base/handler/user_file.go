@@ -15,6 +15,8 @@ type File struct {
 	UploadAt time.Time `json:"upload_at"`
 	// 是否是目录
 	IsDirectory bool `json:"is_directory"`
+	// 文件大小 单位 Byte
+	FileSize int64 `json:"file_size"`
 }
 
 // swagger:parameters GetUserFileListParam
