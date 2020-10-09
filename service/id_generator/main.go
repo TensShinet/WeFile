@@ -32,6 +32,6 @@ func main() {
 	}
 	// 启动服务
 	if err := service.Run(); err != nil {
-		logger.Fatal(err)
+		logger.Panicf("id generator start failed, for the reason:%v", err.Error())
 	}
 }
