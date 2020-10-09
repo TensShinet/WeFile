@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package go.micro.service.id_generator;
+
+service GenerateIDService {
+  // 获取全局唯一自增 id
+  rpc GenerateID(IDReq) returns (IDResp) {}
+}
+
+message IDReq {}
+
+message IDResp {
+  int64 id = 1;
+  Error err = 2;
+}
+
+message Error {
+  int32 code = 1;
+  string message = 2;
+}
