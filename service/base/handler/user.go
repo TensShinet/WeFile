@@ -20,13 +20,13 @@ import (
 type NewUser struct {
 	// 用户名
 	//
-	// minimum length: 10
+	// minimum length: 1
 	// maximum length: 64
 	// Required: true
 	Name string `json:"name"`
 	// 密码
 	//
-	// minimum length: 10
+	// minimum length: 8
 	// maximum length: 64
 	// Required: true
 	Password string `json:"password"`

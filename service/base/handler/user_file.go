@@ -86,7 +86,7 @@ type GetUploadAddressParam struct {
 	}
 }
 
-// swagger:route GET /user/{id}/upload_address User GetUploadAddress
+// swagger:route POST /user/{id}/upload_address User GetUploadAddress
 //
 // GetUploadAddress
 //

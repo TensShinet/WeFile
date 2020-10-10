@@ -1,5 +1,5 @@
 syntax = "proto3";
-
+option go_package = "/github.com/TensShinet/WeFile/service/id_generator/proto";
 package go.micro.service.id_generator;
 
 service GenerateIDService {
