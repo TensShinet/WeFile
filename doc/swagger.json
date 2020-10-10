@@ -43,7 +43,7 @@
       }
     },
     "/download": {
-      "post": {
+      "get": {
         "description": "用户下载",
         "produces": [
           "application/octect-stream"
@@ -323,6 +323,12 @@
           "type": "string",
           "x-go-name": "FileName"
         },
+        "file_size": {
+          "description": "文件大小 单位 Byte",
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "FileSize"
+        },
         "is_directory": {
           "description": "是否是目录",
           "type": "boolean",
@@ -343,15 +349,9 @@
         "name",
         "password",
         "email",
-        "verify_code",
-        "RoleID"
+        "verify_code"
       ],
       "properties": {
-        "RoleID": {
-          "description": "角色 ID",
-          "type": "integer",
-          "format": "int64"
-        },
         "email": {
           "description": "邮箱\n\n邮箱唯一",
           "type": "string",
@@ -370,11 +370,6 @@
           "maxLength": 64,
           "minLength": 10,
           "x-go-name": "Password"
-        },
-        "profile": {
-          "description": "个人介绍",
-          "type": "string",
-          "x-go-name": "Profile"
         },
         "verify_code": {
           "description": "验证码\n\n邮件拿验证码",
@@ -546,6 +541,11 @@
         "file_name": {
           "type": "string",
           "description": "文件名"
+        },
+        "file_size": {
+          "type": "integer",
+          "format": "int64",
+          "description": "文件大小 单位 Byte"
         },
         "is_directory": {
           "type": "boolean",

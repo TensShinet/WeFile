@@ -42,12 +42,6 @@ type NewUser struct {
 	//
 	// Required: true
 	VerifyCode string `json:"verify_code"`
-	// 角色 ID
-	//
-	// Required: true
-	RoleID int
-	// 个人介绍
-	Profile string `json:"profile"`
 }
 
 // swagger:model User
