@@ -5,17 +5,48 @@ import (
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"sync"
+	"time"
 )
 
 type Config struct {
-	LogLevel string     `yaml:"log_level"` // log 级别
-	Etcd     EtcdConfig `yaml:"etcd"`      // etcd 配置
-	NodeID   int        `yaml:"node_id"`   // 节点 id
+	LogLevel string      `yaml:"log_level"`    // log 级别
+	Etcd     EtcdConfig  `yaml:"etcd"`         // etcd 配置
+	DB       DBConfig    `yaml:"db"`           // DB 配置
+	Redis    RedisConfig `yaml:"redis_config"` // redis 配置
+	NodeID   int         `yaml:"node_id"`      // 节点 id
+}
+
+// TODO: DB 详细配置
+type DBConfig struct {
+	MySQL MySQLConfig `yaml:"mysql"` // mysql 配置
 }
 
 // TODO:etcd 详细配置
 type EtcdConfig struct {
 	EndPoints []string `yaml:"end_points"`
+}
+
+type MySQLConfig struct {
+	DSN               string        `yaml:"dsn"` // mysql dsn "user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local"
+	MaxIdleConnection int           `yaml:"maxIdleConnection"`
+	MaxOpenConnection int           `yaml:"maxOpenConnection"`
+	ConnMaxLifetime   time.Duration `yaml:"connMaxLifetime"`
+	Enabled           bool          `yaml:"enabled"` // 是否启用 mysql
+}
+
+type RedisConfig struct {
+	Enabled  bool          `yaml:"enabled"`
+	Conn     string        `yaml:"conn"`
+	Password string        `yaml:"password"`
+	DBNum    int           `yaml:"db_num"`
+	Timeout  int           `yaml:"timeout"`
+	Sentinel redisSentinel `yaml:"sentinel"`
+}
+
+type redisSentinel struct {
+	Enabled bool     `yaml:"enabled"`
+	Master  string   `yaml:"master"`
+	Nodes   []string `yaml:"nodes"`
 }
 
 var (
@@ -29,7 +60,7 @@ var (
 	defaultEtcdEndPoints = []string{"127.0.0.1:2379"}
 )
 
-func GetConfig(filepath string) *Config {
+func Init(filepath string) {
 	once.Do(func() {
 		if filepath == "" {
 			filepath = "conf.yml"
@@ -45,10 +76,12 @@ func GetConfig(filepath string) *Config {
 		if Conf.NodeID == 0 {
 			Conf.NodeID = defaultNodeID
 		}
-
 		if Conf.Etcd.EndPoints == nil {
 			Conf.Etcd.EndPoints = defaultEtcdEndPoints
 		}
 	})
+}
+
+func GetConfig() *Config {
 	return Conf
 }
