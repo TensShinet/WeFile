@@ -13,7 +13,10 @@ import (
 var logger = logging.GetLogger("id_generator")
 
 func main() {
-	config := conf.GetConfig("conf.yml")
+	// 初始化配置
+	conf.Init("conf.yml")
+
+	config := conf.GetConfig()
 	micReg := etcd.NewRegistry(func(options *registry.Options) {
 		options.Addrs = config.Etcd.EndPoints
 	})

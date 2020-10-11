@@ -10,7 +10,7 @@ import (
 type Service struct{}
 
 func (s *Service) GenerateID(ctx context.Context, req *proto.IDReq, res *proto.IDResp) error {
-	config := conf.GetConfig("")
+	config := conf.GetConfig()
 	node, err := snowflake.NewNode(int64(config.NodeID))
 	if err != nil {
 		res.Id = -1
