@@ -28,9 +28,9 @@ type EtcdConfig struct {
 
 type MySQLConfig struct {
 	DSN               string        `yaml:"dsn"` // mysql dsn "user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local"
-	MaxIdleConnection int           `yaml:"maxIdleConnection"`
-	MaxOpenConnection int           `yaml:"maxOpenConnection"`
-	ConnMaxLifetime   time.Duration `yaml:"connMaxLifetime"`
+	MaxIdleConnection int           `yaml:"max_idle_connection"`
+	MaxOpenConnection int           `yaml:"max_open_connection"`
+	ConnMaxLifetime   time.Duration `yaml:"conn_max_lifetime"`
 	Enabled           bool          `yaml:"enabled"` // 是否启用 mysql
 }
 
