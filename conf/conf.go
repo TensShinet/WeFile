@@ -9,11 +9,11 @@ import (
 )
 
 type Config struct {
-	LogLevel string      `yaml:"log_level"`    // log 级别
-	Etcd     EtcdConfig  `yaml:"etcd"`         // etcd 配置
-	DB       DBConfig    `yaml:"db"`           // DB 配置
-	Redis    RedisConfig `yaml:"redis_config"` // redis 配置
-	NodeID   int         `yaml:"node_id"`      // 节点 id
+	LogLevel string      `yaml:"log_level"` // log 级别
+	Etcd     EtcdConfig  `yaml:"etcd"`      // etcd 配置
+	DB       DBConfig    `yaml:"db"`        // DB 配置
+	Redis    RedisConfig `yaml:"redis"`     // redis 配置
+	NodeID   int         `yaml:"node_id"`   // 节点 id
 }
 
 // TODO: DB 详细配置
