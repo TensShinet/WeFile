@@ -1,0 +1,167 @@
+syntax = "proto3";
+option go_package = "github.com/TensShinet/WeFile/service/db/proto";
+package go.micro.service.db;
+
+service Service {
+  // user 相关服务
+  rpc InsertUser(InsertUserReq) returns (InsertUserResp) {}
+  rpc QueryUser(QueryUserReq) returns (QueryUserResp) {}
+
+  // file 相关服务
+  rpc InsertFileMeta(InsertFileMetaReq) returns (InsertFileMetaResp) {}
+  rpc QueryFileMeta(QueryFileMetaReq) returns (QueryFileMetaResp) {}
+
+  // user_file 相关服务
+  rpc ListUserFile(ListUserFileMetaReq) returns (ListUserFileMetaResp) {}
+  rpc InsertUserFile(InsertUserFileMetaReq) returns (InsertUserFileMetaResp) {}
+
+  // session 相关服务
+  rpc InsertSession(InsertSessionReq) returns (InsertSessionResp) {}
+  rpc GetUserSession(GetUserSessionReq) returns (GetUserSessionResp) {}
+  rpc DeleteUserSession(DeleteUserSessionReq) returns (DeleteUserSessionResp) {}
+}
+
+message Error {
+  int32 code = 1;
+  string message = 2;
+}
+
+// user 相关
+
+message User {
+  int64 id = 1;               // 用户 id 创建的时候不需要
+  int64 roleID = 2;           // 角色 id
+  string name = 3;            // 用户名
+  string password = 4;        // 账户密码
+  string email = 5;           // 邮箱
+  string phone = 6;           // 电话号码
+  bool emailValidated = 7;    // 邮箱是否认证
+  bool phoneValidated = 8;    // 电话是否认证
+  int64 signUpAt = 9;         // 注册时间
+  int64 lasActiveAt = 10;     // 最后活跃时间
+  string profile = 11;        // 用户个人介绍
+  int32 status = 12;          // 用户状态
+}
+
+message InsertUserReq{
+    User user = 1;            // 用户信息
+}
+
+message InsertUserResp{
+  int64 id = 1;               // 用户 id
+  Error err = 2;              // 错误信息
+}
+
+message QueryUserReq{
+  int64 id = 1;               // 用户 id
+  string email = 2;           // 用户 email 两者任选
+}
+
+message QueryUserResp{
+  User user = 1;              // 用户信息
+  Error err = 2;              // 错误信息
+}
+
+// file 相关
+
+message FileMeta {
+  int64 id = 1;               // 文件 id 创建的时候不填
+  string hash = 2;            // hash 值
+  string hashAlgorithm = 3;   // hash 算法
+  int64 size = 4;             // 文件大小单位 Byte
+  string location = 5;        // 存储位置
+  int64 createAt = 6;         // 时间戳创建时间
+  int32 status = 7;           // 文件状态(可用/禁用/已删除等状态)
+}
+
+message InsertFileMetaReq {
+    FileMeta fileMeta = 1;  // 文件元信息
+}
+
+message InsertFileMetaResp {
+  int64 id = 1;             // 文件 id
+  Error err = 2;            // 报错信息
+}
+
+message QueryFileMetaReq {
+  int64 id = 1;             // 文件 id
+  string hash = 2;          // 文件 hash 两者任选其一
+}
+
+message QueryFileMetaResp {
+  FileMeta fileMeta = 1;    // 文件元信息
+  Error err = 2;            // 错误信息
+}
+
+// user file 相关
+
+message UserFileMeta {
+  int64 fileID = 1;           // 文件 id 插入时不填
+  string fileName = 2;        // 文件名
+  bool isDirectory = 3;       // 是否是目录
+  int64 uploadAt = 4;         // 上传时间
+  string directory = 5;       // 父目录 格式为 / /dir1 /dir1/dir2
+  int64 lastUpdateAt = 6;     // 最后修改时间
+  int32 status = 7;           // 文件状态
+}
+
+message ListUserFileMetaReq {
+  int64 userID = 1;           // 用户 id
+  string directory = 2;            // 用户目录
+}
+
+message ListUserFileMetaResp{
+  repeated UserFileMeta userFileMetaList = 1; // 用户文件元信息
+  Error err = 2;                              // 错误信息
+}
+
+message InsertUserFileMetaReq{
+  UserFileMeta userFileMeta = 1;              // 用户文件元信息
+  FileMeta fileMeta = 2;                      // 文件本身元信息
+  int64 userID = 3;                           // 用户 id
+}
+
+message InsertUserFileMetaResp {
+  UserFileMeta fileMeta = 1;                  // 文件元信息
+  Error err = 2;                              // 错误信息
+}
+
+// session 相关
+
+message Session {
+  int64 userID = 1;           // 用户 id
+  string token = 2;           // session token
+  int64 createdAt = 3;        // 创建时间
+  int64 expireAt = 4;         // 过期时间
+  string CSRFToken = 5;       // csrf token
+  int64 sessionID = 6;        // session id 表信息 创建的时候不需要
+}
+
+
+message InsertSessionReq {
+  Session session = 1;            // session 信息
+}
+
+message InsertSessionResp {
+  Error err = 1;                  // 错误信息
+}
+
+message GetUserSessionReq {
+  int64 userID = 1;         // 用户 id
+}
+
+message GetUserSessionResp {
+  Session session = 1;      // session 信息
+  Error err = 2;            // 错误信息
+}
+
+message DeleteUserSessionReq {
+  int64 userID = 1;         // 用户 id
+}
+
+message DeleteUserSessionResp {
+  Error err = 1;            // 错误信息
+}
+
+
+
