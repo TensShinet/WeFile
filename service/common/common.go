@@ -1,5 +1,7 @@
 package common
 
+const DBNotFoundCode = 404
+
 // Sever Error
 //
 // swagger:response ErrorResponse
