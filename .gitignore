@@ -18,3 +18,4 @@
 # 配置文件
 wefile.conf
 db_conf.yml
+auth_conf.yml
