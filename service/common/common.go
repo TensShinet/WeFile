@@ -1,6 +1,9 @@
 package common
 
-const DBNotFoundCode = 404
+const (
+	DBNotFoundCode   = 404
+	UnauthorizedCode = 401
+)
 
 // Sever Error
 //
