@@ -38,11 +38,11 @@ type User struct {
 
 type UserFile struct {
 	ID           int64  `gorm:"primary_key:true"`
-	UserID       int64  `gorm:"uniqueIndex:idx_user_file_name"`
-	FileID       int64  `gorm:"uniqueIndex:idx_user_file_name"`
-	FileName     string `gorm:"uniqueIndex:idx_user_file_name;size:128"`
+	UserID       int64  `gorm:"uniqueIndex:idx_user_dir_name"`
+	Directory    string `gorm:"size:128;uniqueIndex:idx_user_dir_name"`
+	FileName     string `gorm:"size:64;uniqueIndex:idx_user_dir_name"`
+	FileID       int64
 	IsDirectory  bool
-	Directory    string
 	UploadAt     time.Time
 	LastUpdateAt time.Time
 	Status       int
@@ -53,6 +53,7 @@ type File struct {
 	Hash          string `gorm:"index;size:64"`
 	HashAlgorithm string `gorm:"size:64"`
 	Size          int64
+	Count         int // 引用计数
 	Location      string
 	CreateAt      time.Time
 	UpdateAt      time.Time
