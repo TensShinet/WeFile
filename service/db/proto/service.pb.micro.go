@@ -45,12 +45,15 @@ type Service interface {
 	// user 相关服务
 	InsertUser(ctx context.Context, in *InsertUserReq, opts ...client.CallOption) (*InsertUserResp, error)
 	QueryUser(ctx context.Context, in *QueryUserReq, opts ...client.CallOption) (*QueryUserResp, error)
+	DeleteUser(ctx context.Context, in *DeleteUserReq, opts ...client.CallOption) (*DeleteUserResp, error)
 	// file 相关服务
 	InsertFileMeta(ctx context.Context, in *InsertFileMetaReq, opts ...client.CallOption) (*InsertFileMetaResp, error)
 	QueryFileMeta(ctx context.Context, in *QueryFileMetaReq, opts ...client.CallOption) (*QueryFileMetaResp, error)
 	// user_file 相关服务
 	ListUserFile(ctx context.Context, in *ListUserFileMetaReq, opts ...client.CallOption) (*ListUserFileMetaResp, error)
 	InsertUserFile(ctx context.Context, in *InsertUserFileMetaReq, opts ...client.CallOption) (*InsertUserFileMetaResp, error)
+	DeleteUserFile(ctx context.Context, in *DeleteUserFileReq, opts ...client.CallOption) (*DeleteUserFileResp, error)
+	QueryUserFile(ctx context.Context, in *QueryUserFileReq, opts ...client.CallOption) (*QueryUserFileResp, error)
 	// session 相关服务
 	InsertSession(ctx context.Context, in *InsertSessionReq, opts ...client.CallOption) (*InsertSessionResp, error)
 	GetUserSession(ctx context.Context, in *GetUserSessionReq, opts ...client.CallOption) (*GetUserSessionResp, error)
@@ -82,6 +85,16 @@ func (c *service) InsertUser(ctx context.Context, in *InsertUserReq, opts ...cli
 func (c *service) QueryUser(ctx context.Context, in *QueryUserReq, opts ...client.CallOption) (*QueryUserResp, error) {
 	req := c.c.NewRequest(c.name, "Service.QueryUser", in)
 	out := new(QueryUserResp)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *service) DeleteUser(ctx context.Context, in *DeleteUserReq, opts ...client.CallOption) (*DeleteUserResp, error) {
+	req := c.c.NewRequest(c.name, "Service.DeleteUser", in)
+	out := new(DeleteUserResp)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -129,6 +142,26 @@ func (c *service) InsertUserFile(ctx context.Context, in *InsertUserFileMetaReq,
 	return out, nil
 }
 
+func (c *service) DeleteUserFile(ctx context.Context, in *DeleteUserFileReq, opts ...client.CallOption) (*DeleteUserFileResp, error) {
+	req := c.c.NewRequest(c.name, "Service.DeleteUserFile", in)
+	out := new(DeleteUserFileResp)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *service) QueryUserFile(ctx context.Context, in *QueryUserFileReq, opts ...client.CallOption) (*QueryUserFileResp, error) {
+	req := c.c.NewRequest(c.name, "Service.QueryUserFile", in)
+	out := new(QueryUserFileResp)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *service) InsertSession(ctx context.Context, in *InsertSessionReq, opts ...client.CallOption) (*InsertSessionResp, error) {
 	req := c.c.NewRequest(c.name, "Service.InsertSession", in)
 	out := new(InsertSessionResp)
@@ -165,12 +198,15 @@ type ServiceHandler interface {
 	// user 相关服务
 	InsertUser(context.Context, *InsertUserReq, *InsertUserResp) error
 	QueryUser(context.Context, *QueryUserReq, *QueryUserResp) error
+	DeleteUser(context.Context, *DeleteUserReq, *DeleteUserResp) error
 	// file 相关服务
 	InsertFileMeta(context.Context, *InsertFileMetaReq, *InsertFileMetaResp) error
 	QueryFileMeta(context.Context, *QueryFileMetaReq, *QueryFileMetaResp) error
 	// user_file 相关服务
 	ListUserFile(context.Context, *ListUserFileMetaReq, *ListUserFileMetaResp) error
 	InsertUserFile(context.Context, *InsertUserFileMetaReq, *InsertUserFileMetaResp) error
+	DeleteUserFile(context.Context, *DeleteUserFileReq, *DeleteUserFileResp) error
+	QueryUserFile(context.Context, *QueryUserFileReq, *QueryUserFileResp) error
 	// session 相关服务
 	InsertSession(context.Context, *InsertSessionReq, *InsertSessionResp) error
 	GetUserSession(context.Context, *GetUserSessionReq, *GetUserSessionResp) error
@@ -181,10 +217,13 @@ func RegisterServiceHandler(s server.Server, hdlr ServiceHandler, opts ...server
 	type service interface {
 		InsertUser(ctx context.Context, in *InsertUserReq, out *InsertUserResp) error
 		QueryUser(ctx context.Context, in *QueryUserReq, out *QueryUserResp) error
+		DeleteUser(ctx context.Context, in *DeleteUserReq, out *DeleteUserResp) error
 		InsertFileMeta(ctx context.Context, in *InsertFileMetaReq, out *InsertFileMetaResp) error
 		QueryFileMeta(ctx context.Context, in *QueryFileMetaReq, out *QueryFileMetaResp) error
 		ListUserFile(ctx context.Context, in *ListUserFileMetaReq, out *ListUserFileMetaResp) error
 		InsertUserFile(ctx context.Context, in *InsertUserFileMetaReq, out *InsertUserFileMetaResp) error
+		DeleteUserFile(ctx context.Context, in *DeleteUserFileReq, out *DeleteUserFileResp) error
+		QueryUserFile(ctx context.Context, in *QueryUserFileReq, out *QueryUserFileResp) error
 		InsertSession(ctx context.Context, in *InsertSessionReq, out *InsertSessionResp) error
 		GetUserSession(ctx context.Context, in *GetUserSessionReq, out *GetUserSessionResp) error
 		DeleteUserSession(ctx context.Context, in *DeleteUserSessionReq, out *DeleteUserSessionResp) error
@@ -208,6 +247,10 @@ func (h *serviceHandler) QueryUser(ctx context.Context, in *QueryUserReq, out *Q
 	return h.ServiceHandler.QueryUser(ctx, in, out)
 }
 
+func (h *serviceHandler) DeleteUser(ctx context.Context, in *DeleteUserReq, out *DeleteUserResp) error {
+	return h.ServiceHandler.DeleteUser(ctx, in, out)
+}
+
 func (h *serviceHandler) InsertFileMeta(ctx context.Context, in *InsertFileMetaReq, out *InsertFileMetaResp) error {
 	return h.ServiceHandler.InsertFileMeta(ctx, in, out)
 }
@@ -222,6 +265,14 @@ func (h *serviceHandler) ListUserFile(ctx context.Context, in *ListUserFileMetaR
 
 func (h *serviceHandler) InsertUserFile(ctx context.Context, in *InsertUserFileMetaReq, out *InsertUserFileMetaResp) error {
 	return h.ServiceHandler.InsertUserFile(ctx, in, out)
+}
+
+func (h *serviceHandler) DeleteUserFile(ctx context.Context, in *DeleteUserFileReq, out *DeleteUserFileResp) error {
+	return h.ServiceHandler.DeleteUserFile(ctx, in, out)
+}
+
+func (h *serviceHandler) QueryUserFile(ctx context.Context, in *QueryUserFileReq, out *QueryUserFileResp) error {
+	return h.ServiceHandler.QueryUserFile(ctx, in, out)
 }
 
 func (h *serviceHandler) InsertSession(ctx context.Context, in *InsertSessionReq, out *InsertSessionResp) error {
