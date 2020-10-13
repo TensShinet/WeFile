@@ -1,11 +1,14 @@
 package handler
 
 import (
+	"github.com/TensShinet/WeFile/conf"
 	"github.com/TensShinet/WeFile/logging"
 	"github.com/TensShinet/WeFile/service/db/conn"
 	idg "github.com/TensShinet/WeFile/service/id_generator/proto"
 	"github.com/go-redis/redis"
-	"github.com/micro/go-micro/v2/client"
+	"github.com/micro/go-micro/v2"
+	"github.com/micro/go-micro/v2/registry"
+	"github.com/micro/go-micro/v2/registry/etcd"
 	"gorm.io/gorm"
 )
 
@@ -25,5 +28,13 @@ func Init() {
 	if redisCli == nil || db == nil {
 		logger.Panic("db or redis cli is not initialized")
 	}
-	generateIDService = idg.NewGenerateIDService("go.micro.service.id_generator", client.DefaultClient)
+	config := conf.GetConfig()
+	micReg := etcd.NewRegistry(func(options *registry.Options) {
+		options.Addrs = config.Etcd.EndPoints
+	})
+	// 新建服务
+	service := micro.NewService(
+		micro.Registry(micReg),
+	)
+	generateIDService = idg.NewGenerateIDService("go.micro.service.id_generator", service.Client())
 }

@@ -57,5 +57,12 @@ func (s *Service) GetUserSession(ctx context.Context, req *proto.GetUserSessionR
 }
 
 func (s *Service) DeleteUserSession(ctx context.Context, req *proto.DeleteUserSessionReq, res *proto.DeleteUserSessionResp) error {
+	err := db.Where("user_id = ?", req.UserID).Delete(&model.Session{}).Error
+	if err != nil {
+		res.Err = &proto.Error{
+			Code:    -1,
+			Message: "delete user session failed, for the reason:" + err.Error(),
+		}
+	}
 	return nil
 }
