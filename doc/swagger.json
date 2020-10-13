@@ -250,7 +250,7 @@
       }
     },
     "/user/{id}/upload_address": {
-      "get": {
+      "post": {
         "description": "得到用户上传地址，并设置 jwt token",
         "tags": [
           "User"
@@ -361,14 +361,14 @@
           "description": "用户名",
           "type": "string",
           "maxLength": 64,
-          "minLength": 10,
+          "minLength": 1,
           "x-go-name": "Name"
         },
         "password": {
           "description": "密码",
           "type": "string",
           "maxLength": 64,
-          "minLength": 10,
+          "minLength": 8,
           "x-go-name": "Password"
         },
         "verify_code": {
