@@ -1,0 +1,47 @@
+syntax = "proto3";
+option go_package = "github.com/TensShinet/WeFile/service/auth/proto";
+package go.micro.service.auth;
+
+service Service {
+  // JWT 相关服务
+  rpc DownloadJWTEncode(DownloadFileMeta) returns (EncodeResp) {}
+  rpc DownloadJWTDecode(DecodeReq) returns (DownloadJWTDecodeResp) {}
+  rpc UploadJWTEncode(UploadFileMeta) returns (EncodeResp) {}
+  rpc UploadJWTDecode(DecodeReq) returns (UploadJWTDecodeResp) {}
+}
+
+message Error {
+  int32 code = 1;
+  string message = 2;
+}
+
+message EncodeResp {
+  string token = 1;
+  Error err = 2;
+}
+
+message DecodeReq {
+  string token = 1;
+}
+
+message DownloadFileMeta {
+  int64 fileID = 1;     // 文件 id
+  string fileName = 2;  // 用户文件名
+}
+
+message DownloadJWTDecodeResp {
+    DownloadFileMeta fileMeta = 1;
+    Error err = 2;
+}
+
+// 用作插入数据库
+message UploadFileMeta {
+    int64 userID = 1;
+    string directory = 2;
+    string fileName = 3;
+}
+
+message UploadJWTDecodeResp {
+    UploadFileMeta fileMeta = 1;
+    Error err = 2;
+}

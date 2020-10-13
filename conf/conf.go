@@ -14,6 +14,13 @@ type Config struct {
 	DB       DBConfig    `yaml:"db"`        // DB 配置
 	Redis    RedisConfig `yaml:"redis"`     // redis 配置
 	NodeID   int         `yaml:"node_id"`   // 节点 id
+	JWT      JWTConfig   `yaml:"jwt"`       // jwt 配置
+}
+
+// TODO: JWT 详细配置
+type JWTConfig struct {
+	ValidTime int    `yaml:"valid_time"` // jwt token 有效时间 单位秒
+	Secret    string `yaml:"secret"`     // jwt 秘钥
 }
 
 // TODO: DB 详细配置
