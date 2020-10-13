@@ -8,6 +8,7 @@ import (
 	"github.com/micro/go-micro/v2"
 	"github.com/micro/go-micro/v2/registry"
 	"github.com/micro/go-micro/v2/registry/etcd"
+	"time"
 )
 
 var logger = logging.GetLogger("auth_service")
@@ -24,6 +25,8 @@ func startRPCService() {
 		micro.Name("go.micro.service.auth"),
 		micro.Registry(micReg),
 		micro.Version("latest"),
+		micro.RegisterTTL(time.Second*time.Duration(config.Service.RegisterTTL)),
+		micro.RegisterInterval(time.Second*time.Duration(config.Service.RegisterInterval)),
 	)
 	// 服务初始化
 	service.Init()

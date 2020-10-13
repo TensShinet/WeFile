@@ -8,6 +8,7 @@ import (
 	"github.com/micro/go-micro/v2"
 	"github.com/micro/go-micro/v2/registry"
 	"github.com/micro/go-micro/v2/registry/etcd"
+	"time"
 )
 
 var logger = logging.GetLogger("id_generator")
@@ -20,11 +21,14 @@ func main() {
 	micReg := etcd.NewRegistry(func(options *registry.Options) {
 		options.Addrs = config.Etcd.EndPoints
 	})
+
 	// 新建服务
 	service := micro.NewService(
 		micro.Name("go.micro.service.id_generator"),
 		micro.Registry(micReg),
 		micro.Version("latest"),
+		micro.RegisterTTL(time.Second*time.Duration(config.Service.RegisterTTL)),
+		micro.RegisterInterval(time.Second*time.Duration(config.Service.RegisterInterval)),
 	)
 	// 服务初始化
 	service.Init()

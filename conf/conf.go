@@ -9,12 +9,18 @@ import (
 )
 
 type Config struct {
-	LogLevel string      `yaml:"log_level"` // log 级别
-	Etcd     EtcdConfig  `yaml:"etcd"`      // etcd 配置
-	DB       DBConfig    `yaml:"db"`        // DB 配置
-	Redis    RedisConfig `yaml:"redis"`     // redis 配置
-	NodeID   int         `yaml:"node_id"`   // 节点 id
-	JWT      JWTConfig   `yaml:"jwt"`       // jwt 配置
+	LogLevel string        `yaml:"log_level"` // log 级别
+	Etcd     EtcdConfig    `yaml:"etcd"`      // etcd 配置
+	DB       DBConfig      `yaml:"db"`        // DB 配置
+	Redis    RedisConfig   `yaml:"redis"`     // redis 配置
+	NodeID   int           `yaml:"node_id"`   // 节点 id
+	JWT      JWTConfig     `yaml:"jwt"`       // jwt 配置
+	Service  ServiceConfig `yaml:"service"`   // service 配置
+}
+
+type ServiceConfig struct {
+	RegisterTTL      int `yaml:"register_ttl"`      // 服务注册超时时间 单位秒
+	RegisterInterval int `yaml:"register_interval"` // 报告状态的时间间隔 单位秒
 }
 
 // TODO: JWT 详细配置
@@ -86,6 +92,15 @@ func Init(filepath string) {
 		if Conf.Etcd.EndPoints == nil {
 			Conf.Etcd.EndPoints = defaultEtcdEndPoints
 		}
+
+		if Conf.Service.RegisterInterval == 0 {
+			Conf.Service.RegisterInterval = 5
+		}
+
+		if Conf.Service.RegisterTTL == 0 {
+			Conf.Service.RegisterTTL = 5
+		}
+
 	})
 }
 
