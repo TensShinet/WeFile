@@ -6,6 +6,7 @@ service Service {
   // user 相关服务
   rpc InsertUser(InsertUserReq) returns (InsertUserResp) {}
   rpc QueryUser(QueryUserReq) returns (QueryUserResp) {}
+  rpc DeleteUser(DeleteUserReq) returns (DeleteUserResp) {}
 
   // file 相关服务
   rpc InsertFileMeta(InsertFileMetaReq) returns (InsertFileMetaResp) {}
@@ -14,6 +15,8 @@ service Service {
   // user_file 相关服务
   rpc ListUserFile(ListUserFileMetaReq) returns (ListUserFileMetaResp) {}
   rpc InsertUserFile(InsertUserFileMetaReq) returns (InsertUserFileMetaResp) {}
+  rpc DeleteUserFile(DeleteUserFileReq) returns (DeleteUserFileResp) {}
+  rpc QueryUserFile(QueryUserFileReq) returns (QueryUserFileResp) {}
 
   // session 相关服务
   rpc InsertSession(InsertSessionReq) returns (InsertSessionResp) {}
@@ -43,7 +46,16 @@ message User {
   int32 status = 12;          // 用户状态
 }
 
-message InsertUserReq{
+message DeleteUserReq {
+  int64 id = 1;
+}
+
+message DeleteUserResp {
+    User user = 1;
+    Error err = 2;
+}
+
+message InsertUserReq {
     User user = 1;            // 用户信息
 }
 
@@ -103,6 +115,28 @@ message UserFileMeta {
   string directory = 5;       // 父目录 格式为 / /dir1 /dir1/dir2
   int64 lastUpdateAt = 6;     // 最后修改时间
   int32 status = 7;           // 文件状态
+}
+
+message DeleteUserFileReq {
+  int64 userID = 1;
+  string directory = 2;
+  string fileName = 3;
+}
+
+message DeleteUserFileResp {
+  UserFileMeta fileMeta = 1;
+  Error err = 2;
+}
+
+message QueryUserFileReq {
+  int64 userID = 1;
+  string directory = 2;
+  string fileName = 3;
+}
+
+message QueryUserFileResp {
+  UserFileMeta fileMeta = 1;
+  Error err = 2;
 }
 
 message ListUserFileMetaReq {

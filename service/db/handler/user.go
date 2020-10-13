@@ -36,11 +36,12 @@ func (s *Service) InsertUser(ctx context.Context, req *proto.InsertUserReq, res 
 			Message: err.Error(),
 		}
 	}
+	res.Id = id
 	return
 }
 func (s *Service) QueryUser(ctx context.Context, req *proto.QueryUserReq, res *proto.QueryUserResp) (err error) {
 	u := model.User{}
-	err = db.Where("user_id=? or email=?", req.Id, req.Email).First(&u).Error
+	err = db.Where("id=? or email=?", req.Id, req.Email).First(&u).Error
 	if err != nil {
 		res.Err = &proto.Error{
 			Code:    -1,
@@ -58,6 +59,35 @@ func (s *Service) QueryUser(ctx context.Context, req *proto.QueryUserReq, res *p
 		Name:           u.Name,
 		Password:       u.Password,
 		Email:          u.Password,
+		Phone:          u.Phone,
+		EmailValidated: u.EmailValidated,
+		PhoneValidated: u.PhoneValidated,
+		SignUpAt:       u.SignUpAt.Unix(),
+		LasActiveAt:    u.LastActiveAt.Unix(),
+		Profile:        u.Profile,
+		Status:         int32(u.Status),
+	}
+	return
+}
+
+func (s *Service) DeleteUser(ctx context.Context, req *proto.DeleteUserReq, res *proto.DeleteUserResp) (err error) {
+	u := &model.User{}
+	err = db.Transaction(func(tx *gorm.DB) error {
+		var (
+			err error
+		)
+		if err = tx.Set("gorm:query_option", "FOR UPDATE").Where("id = ?", req.Id).First(u).Error; err != nil {
+			return err
+		}
+		err = tx.Delete(u).Error
+		return err
+	})
+	res.User = &proto.User{
+		Id:             u.ID,
+		RoleID:         u.RoleID,
+		Name:           u.Name,
+		Password:       u.Password,
+		Email:          u.Email,
 		Phone:          u.Phone,
 		EmailValidated: u.EmailValidated,
 		PhoneValidated: u.PhoneValidated,
