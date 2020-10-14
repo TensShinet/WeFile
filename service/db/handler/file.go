@@ -17,10 +17,7 @@ func (s *Service) QueryFileMeta(ctx context.Context, req *proto.QueryFileMetaReq
 	file := model.File{}
 	err = db.Where("hash = ?", req.Hash).First(&file).Error
 	if err != nil {
-		res.Err = &proto.Error{
-			Code:    -1,
-			Message: err.Error(),
-		}
+		res.Err = getProtoError(err, common.DBServiceError)
 		if err == gorm.ErrRecordNotFound {
 			res.Err.Code = common.DBNotFoundCode
 		}

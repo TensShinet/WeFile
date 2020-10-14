@@ -46,7 +46,6 @@ func TestSession(t *testing.T) {
 	if err := s.GetUserSession(context.TODO(), &proto.GetUserSessionReq{
 		UserID: 456789,
 	}, res3); err != nil {
-		t.Log("res3.Err ", res3.Err)
 		if res3.Err.Code == common.DBNotFoundCode {
 			t.Log("DB Not Found")
 		} else {
@@ -149,7 +148,7 @@ func TestUserFile(t *testing.T) {
 		t.Fatal(err)
 	}
 	m := res2.FileMeta
-	t.Log(m.FileID)
+	t.Logf("file id: %v", m.FileID)
 	if m.IsDirectory || m.FileName != "ts_file" || m.UploadAt != 1 || m.Directory != "/" ||
 		m.LastUpdateAt != 2 || m.Status != 0 {
 		t.Log(m.IsDirectory, m.FileName != "ts_file", m.UploadAt != 1, m.Directory != "/",

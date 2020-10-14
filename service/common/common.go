@@ -3,6 +3,8 @@ package common
 const (
 	DBNotFoundCode   = 404
 	UnauthorizedCode = 401
+	DBConflictCode   = 409
+	DBServiceError   = 500
 )
 
 // Sever Error
