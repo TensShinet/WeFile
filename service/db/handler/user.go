@@ -44,13 +44,12 @@ func (s *Service) InsertUser(ctx context.Context, req *proto.InsertUserReq, res 
 		}).Error; err != nil {
 			// 并发创建，冲突
 			res.Err = getProtoError(err, common.DBConflictCode)
-			return err
+			return nil
 		} else {
 			// 成功创建
 			res.Id = id
 		}
 	} else if err != nil {
-		res.Err = getProtoError(err, common.DBServiceError)
 		return err
 	} else {
 		// 用户已经存在
@@ -64,16 +63,20 @@ func (s *Service) InsertUser(ctx context.Context, req *proto.InsertUserReq, res 
 //
 // 检查这个用户存不存在 不存在 返回 DBNotFoundCode
 // 存在就返回
-func (s *Service) QueryUser(ctx context.Context, req *proto.QueryUserReq, res *proto.QueryUserResp) (err error) {
+func (s *Service) QueryUser(ctx context.Context, req *proto.QueryUserReq, res *proto.QueryUserResp) error {
+
+	var (
+		err error
+	)
+
 	u := model.User{}
 	err = db.Where("id=? or email=?", req.Id, req.Email).First(&u).Error
 	if err != nil {
-		res.Err = getProtoError(err, common.DBServiceError)
-		// 没找到就用 DBNotFoundCode
 		if err == gorm.ErrRecordNotFound {
 			res.Err = getProtoError(err, common.DBNotFoundCode)
+		} else {
+			return err
 		}
-		return
 	}
 	res.User = &proto.User{
 		Id:             u.ID,
@@ -89,7 +92,7 @@ func (s *Service) QueryUser(ctx context.Context, req *proto.QueryUserReq, res *p
 		Profile:        u.Profile,
 		Status:         int32(u.Status),
 	}
-	return
+	return nil
 }
 
 // 删除一个用户
@@ -97,7 +100,10 @@ func (s *Service) QueryUser(ctx context.Context, req *proto.QueryUserReq, res *p
 // 查询该用户存不存在 不存在返回 DBNotFoundCode
 // 存在就上锁 删掉这个用户
 // 事务中所有的 err 统一在外面处理
-func (s *Service) DeleteUser(ctx context.Context, req *proto.DeleteUserReq, res *proto.DeleteUserResp) (err error) {
+func (s *Service) DeleteUser(ctx context.Context, req *proto.DeleteUserReq, res *proto.DeleteUserResp) error {
+	var (
+		err error
+	)
 	u := &model.User{}
 	err = db.Transaction(func(tx *gorm.DB) error {
 		var (
@@ -110,11 +116,12 @@ func (s *Service) DeleteUser(ctx context.Context, req *proto.DeleteUserReq, res 
 		return err
 	})
 	if err != nil {
-		res.Err = getProtoError(err, common.DBServiceError)
 		if err == gorm.ErrRecordNotFound {
 			res.Err = getProtoError(err, common.DBNotFoundCode)
+			return nil
+		} else {
+			return err
 		}
-		return
 	}
 	res.User = &proto.User{
 		Id:             u.ID,
@@ -130,5 +137,5 @@ func (s *Service) DeleteUser(ctx context.Context, req *proto.DeleteUserReq, res 
 		Profile:        u.Profile,
 		Status:         int32(u.Status),
 	}
-	return
+	return err
 }

@@ -13,15 +13,20 @@ func (s *Service) InsertFileMeta(ctx context.Context, req *proto.InsertFileMetaR
 	return nil
 }
 
-func (s *Service) QueryFileMeta(ctx context.Context, req *proto.QueryFileMetaReq, res *proto.QueryFileMetaResp) (err error) {
+func (s *Service) QueryFileMeta(ctx context.Context, req *proto.QueryFileMetaReq, res *proto.QueryFileMetaResp) error {
+
+	var (
+		err error
+	)
 	file := model.File{}
 	err = db.Where("hash = ?", req.Hash).First(&file).Error
 	if err != nil {
-		res.Err = getProtoError(err, common.DBServiceError)
 		if err == gorm.ErrRecordNotFound {
-			res.Err.Code = common.DBNotFoundCode
+			res.Err = getProtoError(err, common.DBNotFoundCode)
+			return nil
+		} else {
+			return err
 		}
-		return
 	}
 	res.FileMeta = &proto.FileMeta{
 		Id:            file.ID,
@@ -32,5 +37,5 @@ func (s *Service) QueryFileMeta(ctx context.Context, req *proto.QueryFileMetaReq
 		CreateAt:      file.CreateAt.Unix(),
 		Status:        int32(file.Status),
 	}
-	return
+	return nil
 }
