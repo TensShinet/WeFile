@@ -22,11 +22,11 @@ func (s *Service) ListUserFile(ctx context.Context, req *proto.ListUserFileMetaR
 	var files []*model.UserFile
 	err = db.Where("user_id = ? and directory = ?", req.UserID, req.Directory).Find(&files).Error
 	if err != nil {
-		res.Err = getProtoError(err, common.DBServiceError)
 		if err == gorm.ErrRecordNotFound {
 			res.Err = getProtoError(err, common.DBNotFoundCode)
+			return nil
 		}
-		return
+		return err
 	}
 	res.UserFileMetaList = make([]*proto.UserFileMeta, len(files))
 	for i, f := range files {
@@ -51,20 +51,21 @@ var errConflict = fmt.Errorf("confilct error")
 // 向 files 表中创建或获取一条数据
 // 更新 file 引用计数
 // 向 user_files 表中插入一条数据 如果冲突 返回 errConflict 事务回退
-func (s *Service) InsertUserFile(ctx context.Context, req *proto.InsertUserFileMetaReq, res *proto.InsertUserFileMetaResp) (err error) {
+func (s *Service) InsertUserFile(ctx context.Context, req *proto.InsertUserFileMetaReq, res *proto.InsertUserFileMetaResp) error {
 
 	var (
+		err                error
 		fileID, userFileID int64
 	)
 
 	if fileID, err = getID(ctx); err != nil {
 		res.Err = getProtoError(err, common.DBServiceError)
-		return
+		return err
 	}
 
 	if userFileID, err = getID(ctx); err != nil {
 		res.Err = getProtoError(err, common.DBServiceError)
-		return
+		return err
 	}
 
 	err = db.Transaction(func(tx *gorm.DB) error {
@@ -127,9 +128,9 @@ func (s *Service) InsertUserFile(ctx context.Context, req *proto.InsertUserFileM
 	})
 
 	if err != nil {
-		res.Err = getProtoError(err, common.DBServiceError)
 		if err == errConflict {
 			res.Err = getProtoError(err, common.DBConflictCode)
+			return nil
 		}
 		return err
 	}
@@ -140,7 +141,11 @@ func (s *Service) InsertUserFile(ctx context.Context, req *proto.InsertUserFileM
 //
 // 删除 user_files 中的一条记录如果没有 返回 not found 错误
 // 更新 files 表中的引用计数
-func (s *Service) DeleteUserFile(ctx context.Context, req *proto.DeleteUserFileReq, res *proto.DeleteUserFileResp) (err error) {
+func (s *Service) DeleteUserFile(ctx context.Context, req *proto.DeleteUserFileReq, res *proto.DeleteUserFileResp) error {
+
+	var (
+		err error
+	)
 
 	userFileMeta := &model.UserFile{}
 
@@ -169,11 +174,11 @@ func (s *Service) DeleteUserFile(ctx context.Context, req *proto.DeleteUserFileR
 	})
 
 	if err != nil {
-		res.Err = getProtoError(err, common.DBServiceError)
 		if err == gorm.ErrRecordNotFound {
 			res.Err = getProtoError(err, common.DBNotFoundCode)
+			return nil
 		}
-		return
+		return err
 	}
 	// 删除成功
 	res.FileMeta = &proto.UserFileMeta{
@@ -185,18 +190,21 @@ func (s *Service) DeleteUserFile(ctx context.Context, req *proto.DeleteUserFileR
 		LastUpdateAt: userFileMeta.LastUpdateAt.Unix(),
 		Status:       int32(userFileMeta.Status),
 	}
-	return
+	return nil
 }
 
-func (s *Service) QueryUserFile(ctx context.Context, req *proto.QueryUserFileReq, res *proto.QueryUserFileResp) (err error) {
+func (s *Service) QueryUserFile(ctx context.Context, req *proto.QueryUserFileReq, res *proto.QueryUserFileResp) error {
+	var (
+		err error
+	)
 	userFile := model.UserFile{}
 	err = db.Where("user_id=? AND directory = ? AND file_name = ?", req.UserID, req.Directory, req.FileName).First(&userFile).Error
 	if err != nil {
-		res.Err = getProtoError(err, common.DBServiceError)
 		if err == gorm.ErrRecordNotFound {
 			res.Err.Code = common.DBNotFoundCode
+			return nil
 		}
-		return
+		return err
 	}
 	res.FileMeta = &proto.UserFileMeta{
 		FileID:       userFile.FileID,
@@ -207,5 +215,5 @@ func (s *Service) QueryUserFile(ctx context.Context, req *proto.QueryUserFileReq
 		LastUpdateAt: userFile.LastUpdateAt.Unix(),
 		Status:       int32(userFile.Status),
 	}
-	return
+	return nil
 }
