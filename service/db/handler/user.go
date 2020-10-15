@@ -53,7 +53,7 @@ func (s *Service) InsertUser(ctx context.Context, req *proto.InsertUserReq, res 
 		return err
 	} else {
 		// 用户已经存在
-		res.Err = getProtoError(err, common.DBConflictCode)
+		res.Err = getProtoError(errConflict, common.DBConflictCode)
 	}
 
 	return nil
@@ -83,7 +83,7 @@ func (s *Service) QueryUser(ctx context.Context, req *proto.QueryUserReq, res *p
 		RoleID:         u.RoleID,
 		Name:           u.Name,
 		Password:       u.Password,
-		Email:          u.Password,
+		Email:          u.Email,
 		Phone:          u.Phone,
 		EmailValidated: u.EmailValidated,
 		PhoneValidated: u.PhoneValidated,
