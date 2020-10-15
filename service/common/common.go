@@ -5,6 +5,13 @@ const (
 	UnauthorizedCode = 401
 	DBConflictCode   = 409
 	DBServiceError   = 500
+
+	// role id
+	GeneralUserRoleID = 10000
+	AdminRoleID       = 1
+
+	GeneralUserRoleName = "普通用户"
+	AdminRoleName       = "超级用户"
 )
 
 // Sever Error
@@ -39,5 +46,12 @@ type ForbiddenResponse struct {
 //
 // swagger:response UnauthorizedResponse
 type UnauthorizedResponse struct {
+	Message string `json:"message"`
+}
+
+// BadRequest
+//
+// swagger:response BadRequestResponse
+type BadRequestResponse struct {
 	Message string `json:"message"`
 }

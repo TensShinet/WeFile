@@ -16,6 +16,15 @@ type Config struct {
 	NodeID   int           `yaml:"node_id"`   // 节点 id
 	JWT      JWTConfig     `yaml:"jwt"`       // jwt 配置
 	Service  ServiceConfig `yaml:"service"`   // service 配置
+	BaseAPI  BaseAPIConfig `yaml:"base_api"`  // base api 配置
+}
+
+type BaseAPIConfig struct {
+	Address        string `yaml:"address"`         // 监听地址
+	Salt           string `yaml:"salt"`            // 密码盐值
+	SessionSecrete string `yaml:"session_secrete"` // session secrete
+	SessionMaxAge  int    `yaml:"session_max_age"` // session 存活时间 单位分钟
+	SessionName    string `yaml:"session_name"`    // cookie 中 session name
 }
 
 type ServiceConfig struct {
@@ -48,6 +57,7 @@ type MySQLConfig struct {
 }
 
 type RedisConfig struct {
+	Network  string        `yaml:"network"`
 	Enabled  bool          `yaml:"enabled"`
 	Conn     string        `yaml:"conn"`
 	Password string        `yaml:"password"`
