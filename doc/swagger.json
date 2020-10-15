@@ -71,6 +71,101 @@
         }
       }
     },
+    "/download_address/{user_id}": {
+      "get": {
+        "description": "得到用户文件下载地址，并设置 jwt token",
+        "tags": [
+          "User"
+        ],
+        "summary": "GetDownloadAddress",
+        "operationId": "GetDownloadAddress",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Cookie",
+            "name": "cookie",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "FileID",
+            "name": "file_id",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "FileName",
+            "name": "file_name",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "Directory",
+            "name": "directory",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/AddressResponse"
+          },
+          "400": {
+            "$ref": "#/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/file_list/{user_id}": {
+      "get": {
+        "description": "用户目录下的文件",
+        "tags": [
+          "User"
+        ],
+        "summary": "GetUserFileList",
+        "operationId": "GetUserFileList",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Cookie",
+            "name": "cookie",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "Directory",
+            "name": "directory",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/FileListResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/responses/NotFoundError"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      }
+    },
     "/role/all": {
       "get": {
         "description": "获得所有角色",
@@ -82,6 +177,52 @@
         "responses": {
           "200": {
             "$ref": "#/responses/RoleList"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/upload_address/{user_id}": {
+      "get": {
+        "description": "得到用户上传地址，并设置 jwt token",
+        "tags": [
+          "User"
+        ],
+        "summary": "GetUploadAddress",
+        "operationId": "GetUploadAddress",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Cookie",
+            "name": "cookie",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "FileName",
+            "description": "文件名",
+            "name": "file_name",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "Directory",
+            "description": "目录\n比如 / /dir /dir1/dir2",
+            "name": "directory",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/AddressResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
           },
           "500": {
             "$ref": "#/responses/ErrorResponse"
@@ -160,146 +301,11 @@
           "200": {
             "$ref": "#/responses/UserResponse"
           },
+          "400": {
+            "$ref": "#/responses/BadRequestResponse"
+          },
           "409": {
             "$ref": "#/responses/ConflictError"
-          },
-          "500": {
-            "$ref": "#/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/user/{id}/download_address": {
-      "post": {
-        "description": "得到用户文件下载地址，并设置 jwt token",
-        "tags": [
-          "User"
-        ],
-        "summary": "GetDownloadAddress",
-        "operationId": "GetDownloadAddress",
-        "parameters": [
-          {
-            "type": "string",
-            "x-go-name": "Cookie",
-            "name": "cookie",
-            "in": "query"
-          },
-          {
-            "name": "Body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "required": [
-                "file_id",
-                "file_name",
-                "token"
-              ],
-              "properties": {
-                "file_id": {
-                  "description": "文件唯一 ID",
-                  "type": "integer",
-                  "format": "int64",
-                  "x-go-name": "FileID"
-                },
-                "file_name": {
-                  "description": "文件名",
-                  "type": "string",
-                  "x-go-name": "FileName"
-                },
-                "token": {
-                  "description": "csrf Token",
-                  "type": "string",
-                  "x-go-name": "Token"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "$ref": "#/responses/AddressResponse"
-          },
-          "401": {
-            "$ref": "#/responses/UnauthorizedResponse"
-          },
-          "500": {
-            "$ref": "#/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/user/{id}/file_list": {
-      "post": {
-        "description": "用户目录下的文件",
-        "tags": [
-          "User"
-        ],
-        "summary": "GetUserFileList",
-        "operationId": "GetUserFileList",
-        "responses": {
-          "200": {
-            "$ref": "#/responses/FileListResponse"
-          },
-          "401": {
-            "$ref": "#/responses/UnauthorizedResponse"
-          },
-          "500": {
-            "$ref": "#/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/user/{id}/upload_address": {
-      "post": {
-        "description": "得到用户上传地址，并设置 jwt token",
-        "tags": [
-          "User"
-        ],
-        "summary": "GetUploadAddress",
-        "operationId": "GetUploadAddress",
-        "parameters": [
-          {
-            "type": "string",
-            "x-go-name": "Cookie",
-            "name": "cookie",
-            "in": "query"
-          },
-          {
-            "name": "Body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "required": [
-                "file_name",
-                "directory",
-                "token"
-              ],
-              "properties": {
-                "directory": {
-                  "description": "目录\n比如 / /dir /dir1/dir2",
-                  "type": "string",
-                  "x-go-name": "Directory"
-                },
-                "file_name": {
-                  "description": "文件名",
-                  "type": "string",
-                  "x-go-name": "FileName"
-                },
-                "token": {
-                  "description": "csrf Token",
-                  "type": "string",
-                  "x-go-name": "Token"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "$ref": "#/responses/AddressResponse"
-          },
-          "401": {
-            "$ref": "#/responses/UnauthorizedResponse"
           },
           "500": {
             "$ref": "#/responses/ErrorResponse"
@@ -399,6 +405,11 @@
     "User": {
       "type": "object",
       "properties": {
+        "csrf_token": {
+          "description": "csrf Token",
+          "type": "string",
+          "x-go-name": "CSRFToken"
+        },
         "email": {
           "description": "邮箱",
           "type": "string",
@@ -454,6 +465,14 @@
         }
       }
     },
+    "BadRequestResponse": {
+      "description": "BadRequest",
+      "headers": {
+        "message": {
+          "type": "string"
+        }
+      }
+    },
     "ConflictError": {
       "description": "Conflict Error",
       "headers": {
@@ -483,9 +502,9 @@
       "schema": {
         "type": "object",
         "properties": {
-          "directory_name": {
+          "directory": {
             "type": "string",
-            "x-go-name": "DirectoryName"
+            "x-go-name": "Directory"
           },
           "files": {
             "type": "array",
