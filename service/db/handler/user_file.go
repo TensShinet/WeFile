@@ -16,18 +16,17 @@ import (
 //
 //
 func (s *Service) ListUserFile(ctx context.Context, req *proto.ListUserFileMetaReq, res *proto.ListUserFileMetaResp) (err error) {
+	logger.Infof("ListUserFile directory:%v userID:%v", req.Directory, req.UserID)
 	if req.Directory == "" {
 		req.Directory = "/"
 	}
 	var files []*model.UserFile
-	err = db.Where("user_id = ? and directory = ?", req.UserID, req.Directory).Find(&files).Error
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			res.Err = getProtoError(err, common.DBNotFoundCode)
-			return nil
-		}
+
+	// slice 不报 ErrRecordNotFound
+	if err = db.Where("user_id = ? and directory = ?", req.UserID, req.Directory).Find(&files).Error; err != nil {
 		return err
 	}
+
 	res.UserFileMetaList = make([]*proto.UserFileMeta, len(files))
 	for i, f := range files {
 		res.UserFileMetaList[i] = &proto.UserFileMeta{
@@ -194,18 +193,20 @@ func (s *Service) DeleteUserFile(ctx context.Context, req *proto.DeleteUserFileR
 }
 
 func (s *Service) QueryUserFile(ctx context.Context, req *proto.QueryUserFileReq, res *proto.QueryUserFileResp) error {
+
 	var (
 		err error
 	)
 	userFile := model.UserFile{}
 	err = db.Where("user_id=? AND directory = ? AND file_name = ?", req.UserID, req.Directory, req.FileName).First(&userFile).Error
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			res.Err.Code = common.DBNotFoundCode
-			return nil
-		}
+
+	if err == gorm.ErrRecordNotFound {
+		res.Err = getProtoError(err, common.DBNotFoundCode)
+		return nil
+	} else if err != nil {
 		return err
 	}
+
 	res.FileMeta = &proto.UserFileMeta{
 		FileID:       userFile.FileID,
 		FileName:     userFile.FileName,
