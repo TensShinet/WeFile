@@ -32,15 +32,15 @@ type User struct {
 	PhoneValidated bool
 	SignUpAt       time.Time
 	LastActiveAt   time.Time
-	Profile        string `gorm:"size:256"`
+	Profile        string `gorm:"size:255"`
 	Status         int
 }
 
 type UserFile struct {
 	ID           int64  `gorm:"primary_key:true"`
-	UserID       int64  `gorm:"uniqueIndex:idx_user_dir_name"`
-	Directory    string `gorm:"size:128;uniqueIndex:idx_user_dir_name"`
-	FileName     string `gorm:"size:64;uniqueIndex:idx_user_dir_name"`
+	UserID       int64  `gorm:"index:idx_user"`
+	Directory    string `gorm:"size:1024"`
+	FileName     string `gorm:"size:255"`
 	FileID       int64
 	IsDirectory  bool
 	UploadAt     time.Time
