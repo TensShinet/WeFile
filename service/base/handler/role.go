@@ -1,6 +1,10 @@
 package handler
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/TensShinet/WeFile/service/common"
+	"github.com/gin-gonic/gin"
+	"net/http"
+)
 
 // swagger:model Role
 type Role struct {
@@ -26,4 +30,15 @@ type RoleList struct {
 //     Responses:
 //       200: RoleList
 //       500: ErrorResponse
-func GetAllRoles(c *gin.Context) {}
+func GetAllRoles(c *gin.Context) {
+	c.JSON(http.StatusOK, []Role{
+		{
+			RoleID: common.GeneralUserRoleID,
+			Name:   common.GeneralUserRoleName,
+		},
+		{
+			RoleID: common.AdminRoleID,
+			Name:   common.AdminRoleName,
+		},
+	})
+}
