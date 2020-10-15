@@ -222,7 +222,7 @@ func GetDownloadAddress(c *gin.Context) {
 	}
 	fileName := c.Request.FormValue("file_name")
 	userID, _ = strconv.ParseInt(c.Param("user_id"), 10, 64)
-	directory := c.Query("file_id")
+	directory := c.Query("directory")
 
 	if directory == "" || fileName == "" {
 		c.JSON(http.StatusBadRequest, common.BadRequestResponse{
