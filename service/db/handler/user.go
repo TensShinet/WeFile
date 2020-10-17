@@ -25,6 +25,7 @@ func (s *Service) InsertUser(ctx context.Context, req *proto.InsertUserReq, res 
 		res.Err = getProtoError(err, common.DBServiceError)
 		return err
 	}
+	logger.Infof("InsertUser id:%v", id)
 	u := req.User
 	modelUser := &model.User{}
 	if err = db.Where("email = ?", u.Email).Take(modelUser).Error; err == gorm.ErrRecordNotFound {
@@ -43,6 +44,7 @@ func (s *Service) InsertUser(ctx context.Context, req *proto.InsertUserReq, res 
 			Status:         int(u.Status),
 		}).Error; err != nil {
 			// 并发创建，冲突
+			logger.Infof("InsertUser failed, for the reason:%v", err)
 			res.Err = getProtoError(err, common.DBConflictCode)
 			return nil
 		} else {
@@ -53,7 +55,9 @@ func (s *Service) InsertUser(ctx context.Context, req *proto.InsertUserReq, res 
 		return err
 	} else {
 		// 用户已经存在
+		logger.Infof("InsertUser failed, for the reason:%v", err)
 		res.Err = getProtoError(errConflict, common.DBConflictCode)
+		return nil
 	}
 
 	return nil
@@ -71,9 +75,12 @@ func (s *Service) QueryUser(ctx context.Context, req *proto.QueryUserReq, res *p
 
 	u := model.User{}
 	err = db.Where("id=? or email=?", req.Id, req.Email).First(&u).Error
+	logger.Infof("QueryUser id=%v email=%v", req.Id, req.Email)
 	if err != nil {
+		logger.Errorf("QueryUser failed, for the reason:%v", err)
 		if err == gorm.ErrRecordNotFound {
 			res.Err = getProtoError(err, common.DBNotFoundCode)
+			return nil
 		} else {
 			return err
 		}
@@ -102,26 +109,26 @@ func (s *Service) QueryUser(ctx context.Context, req *proto.QueryUserReq, res *p
 // 事务中所有的 err 统一在外面处理
 func (s *Service) DeleteUser(ctx context.Context, req *proto.DeleteUserReq, res *proto.DeleteUserResp) error {
 	var (
-		err error
+		err      error
+		affected int64
 	)
 	u := &model.User{}
+	logger.Infof("DeleteUser id=%v", req.Id)
 	err = db.Transaction(func(tx *gorm.DB) error {
-		var (
-			err error
-		)
 		if err = tx.Set("gorm:query_option", "FOR UPDATE").Where("id = ?", req.Id).First(u).Error; err != nil {
 			return err
 		}
-		err = tx.Delete(u).Error
-		return err
+		affected = tx.Delete(u).RowsAffected
+		return nil
 	})
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			res.Err = getProtoError(err, common.DBNotFoundCode)
-			return nil
-		} else {
-			return err
-		}
+		logger.Errorf("DeleteUser failed, for the reason:%v", err)
+		return err
+	}
+	if affected == 0 {
+		logger.Errorf("DeleteUser failed, for the reason:%v", gorm.ErrRecordNotFound)
+		res.Err = getProtoError(gorm.ErrRecordNotFound, common.DBNotFoundCode)
+		return nil
 	}
 	res.User = &proto.User{
 		Id:             u.ID,

@@ -24,6 +24,7 @@ func (s *Service) ListUserFile(ctx context.Context, req *proto.ListUserFileMetaR
 
 	// slice 不报 ErrRecordNotFound
 	if err = db.Where("user_id = ? and directory = ?", req.UserID, req.Directory).Find(&files).Error; err != nil {
+		logger.Errorf("ListUserFile failed, for the reason:%v", err)
 		return err
 	}
 
@@ -66,7 +67,7 @@ func (s *Service) InsertUserFile(ctx context.Context, req *proto.InsertUserFileM
 		res.Err = getProtoError(err, common.DBServiceError)
 		return err
 	}
-
+	logger.Infof("InsertUserFile userID:%v directory:%v filename:%v", req.UserID, req.UserFileMeta.Directory, req.UserFileMeta.FileName)
 	err = db.Transaction(func(tx *gorm.DB) error {
 		// file 表
 		var (
@@ -102,6 +103,7 @@ func (s *Service) InsertUserFile(ctx context.Context, req *proto.InsertUserFileM
 		// 如果有一样的就回退
 		err = tx.Where("user_id = ? AND directory = ? AND file_name = ?", req.UserID, req.UserFileMeta.Directory, req.UserFileMeta.FileName).First(&model.UserFile{}).Error
 		if err == gorm.ErrRecordNotFound {
+			hash := getUserFileHash(req.UserID, req.UserFileMeta.Directory, req.UserFileMeta.FileName)
 			if err = tx.Create(&model.UserFile{
 				ID:           userFileID,
 				UserID:       req.UserID,
@@ -111,6 +113,7 @@ func (s *Service) InsertUserFile(ctx context.Context, req *proto.InsertUserFileM
 				Directory:    userFile.Directory,
 				UploadAt:     time.Unix(userFile.UploadAt, 0),
 				LastUpdateAt: time.Unix(userFile.LastUpdateAt, 0),
+				Hash:         hash, // 保证唯一性
 				Status:       int(userFile.Status),
 			}).Error; err != nil {
 				// 并发冲突
@@ -127,6 +130,7 @@ func (s *Service) InsertUserFile(ctx context.Context, req *proto.InsertUserFileM
 	})
 
 	if err != nil {
+		logger.Errorf("InsertUserFile failed, for the reason:%v", err)
 		if err == errConflict {
 			res.Err = getProtoError(err, common.DBConflictCode)
 			return nil
@@ -143,11 +147,12 @@ func (s *Service) InsertUserFile(ctx context.Context, req *proto.InsertUserFileM
 func (s *Service) DeleteUserFile(ctx context.Context, req *proto.DeleteUserFileReq, res *proto.DeleteUserFileResp) error {
 
 	var (
-		err error
+		err          error
+		affectedRows int64
 	)
 
 	userFileMeta := &model.UserFile{}
-
+	logger.Infof("DeleteUserFile userID=%v directory=%v filename:%v", req.UserID, req.Directory, req.FileName)
 	err = db.Transaction(func(tx *gorm.DB) error {
 		var (
 			err error
@@ -157,9 +162,8 @@ func (s *Service) DeleteUserFile(ctx context.Context, req *proto.DeleteUserFileR
 			return err
 		}
 
-		if err = db.Delete(userFileMeta).Error; err != nil {
-			return err
-		}
+		affectedRows = db.Delete(userFileMeta).RowsAffected
+
 		file := model.File{}
 		if err = tx.Set("gorm:query_option", "FOR UPDATE").Where("id = ?", userFileMeta.FileID).First(&file).Error; err != nil {
 			return err
@@ -173,12 +177,15 @@ func (s *Service) DeleteUserFile(ctx context.Context, req *proto.DeleteUserFileR
 	})
 
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			res.Err = getProtoError(err, common.DBNotFoundCode)
-			return nil
-		}
+		logger.Errorf("DeleteUserFile failed, for the reason:%v", err)
 		return err
 	}
+
+	if affectedRows == 0 {
+		res.Err = getProtoError(gorm.ErrRecordNotFound, common.DBNotFoundCode)
+		return nil
+	}
+
 	// 删除成功
 	res.FileMeta = &proto.UserFileMeta{
 		FileID:       userFileMeta.FileID,
@@ -198,12 +205,14 @@ func (s *Service) QueryUserFile(ctx context.Context, req *proto.QueryUserFileReq
 		err error
 	)
 	userFile := model.UserFile{}
+	logger.Infof("QueryUserFile userID=%v directory=%v filename:%v", req.UserID, req.Directory, req.FileName)
 	err = db.Where("user_id=? AND directory = ? AND file_name = ?", req.UserID, req.Directory, req.FileName).First(&userFile).Error
 
 	if err == gorm.ErrRecordNotFound {
 		res.Err = getProtoError(err, common.DBNotFoundCode)
 		return nil
 	} else if err != nil {
+		logger.Errorf("QueryUserFile failed, for the reason:%v", err)
 		return err
 	}
 

@@ -18,13 +18,16 @@ func (s *Service) QueryFileMeta(ctx context.Context, req *proto.QueryFileMetaReq
 	var (
 		err error
 	)
+	logger.Infof("QueryFileMeta id=%v hash=%v", req.Id, req.Hash)
 	file := model.File{}
-	err = db.Where("hash = ?", req.Hash).First(&file).Error
+	err = db.Where("id = ? || hash = ?", req.Id, req.Hash).First(&file).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
+			logger.Infof("QueryFileMeta id=%v hash=%v not found", req.Id, req.Hash)
 			res.Err = getProtoError(err, common.DBNotFoundCode)
 			return nil
 		} else {
+			logger.Errorf("QueryFileMeta id=%v hash=%v failed, for the reason:%v", req.Id, req.Hash, err)
 			return err
 		}
 	}

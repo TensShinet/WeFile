@@ -5,6 +5,8 @@ import (
 	"fmt"
 	dbProto "github.com/TensShinet/WeFile/service/db/proto"
 	idgProto "github.com/TensShinet/WeFile/service/id_generator/proto"
+	"github.com/TensShinet/WeFile/utils"
+	"strconv"
 )
 
 func getID(ctx context.Context) (int64, error) {
@@ -20,4 +22,9 @@ func getID(ctx context.Context) (int64, error) {
 
 func getProtoError(err error, code int) *dbProto.Error {
 	return &dbProto.Error{Code: int32(code), Message: err.Error()}
+}
+
+func getUserFileHash(id int64, directory, filename string) string {
+	s := strconv.FormatInt(id, 16) + directory + filename
+	return utils.Digest256([]byte(s))
 }
