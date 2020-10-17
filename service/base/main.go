@@ -41,7 +41,7 @@ func registerService() {
 
 	// 启动服务
 	if err := service.Run(); err != nil {
-		logger.Panicf("id generator start failed, for the reason:%v", err.Error())
+		logger.Panicf("base service start failed, for the reason:%v", err.Error())
 	}
 }
 

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/TensShinet/WeFile/conf"
 	auth "github.com/TensShinet/WeFile/service/auth/proto"
 	"github.com/TensShinet/WeFile/service/common"
 	db "github.com/TensShinet/WeFile/service/db/proto"
@@ -150,10 +151,10 @@ func GetUploadAddress(c *gin.Context) {
 	)
 
 	// TODO: 检查
-	id, _ := strconv.ParseInt(c.Request.FormValue("user_id"), 10, 64)
+	id, _ := strconv.ParseInt(c.Param("user_id"), 10, 64)
 	directory := c.Query("directory")
 	fileName := c.Query("file_name")
-	logger.Infof("GetUploadAddress id:%v directory:%v fileName:&v", id, directory, fileName)
+	logger.Infof("GetUploadAddress id:%v directory:%v fileName:%v", id, directory, fileName)
 	if directory == "" || fileName == "" {
 		c.JSON(http.StatusBadRequest, common.BadRequestResponse{
 			Message: "目录或者文件名为空",
@@ -171,8 +172,9 @@ func GetUploadAddress(c *gin.Context) {
 		return
 	}
 	c.Header("Authorization", "Bearer "+res.Token)
+	config := conf.GetConfig()
 	c.JSON(http.StatusOK, gin.H{
-		"address": "http://upload.wefile.com/api/v1/upload",
+		"address": config.BaseAPI.UploadAPIAddress,
 	})
 }
 
@@ -231,7 +233,7 @@ func GetDownloadAddress(c *gin.Context) {
 		return
 	}
 
-	logger.Infof("GetDownloadAddress fileID:%v directory:%v fileName:&v", fileID, directory, fileName)
+	logger.Infof("GetDownloadAddress fileID:%v directory:%v fileName:%v", fileID, directory, fileName)
 
 	// 查询文件是否存在
 	if res1, err = dbService.QueryUserFile(c, &db.QueryUserFileReq{
@@ -259,7 +261,9 @@ func GetDownloadAddress(c *gin.Context) {
 		return
 	}
 	c.Header("Authorization", "Bearer "+res.Token)
+
+	config := conf.GetConfig()
 	c.JSON(http.StatusOK, gin.H{
-		"address": "http://download.wefile.com/api/v1/download",
+		"address": config.BaseAPI.DownloadAPIAddress,
 	})
 }

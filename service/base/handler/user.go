@@ -13,7 +13,6 @@
 package handler
 
 import (
-	"encoding/base64"
 	"github.com/TensShinet/WeFile/conf"
 	"github.com/TensShinet/WeFile/service/common"
 	db "github.com/TensShinet/WeFile/service/db/proto"
@@ -113,14 +112,14 @@ func SignUp(c *gin.Context) {
 	name := c.Request.FormValue("name")
 	password := c.Request.FormValue("password")
 	email := c.Request.FormValue("email")
-	logger.Debugf("SignUp %v %v %v", name, password, email)
+	logger.Debugf("SignUp name:%v password:%v email:%v", name, password, email)
 	// TODO: 复杂检查
 	if len(name) > 64 || len(name) < 1 || len(password) < 8 || len(password) > 64 {
 		c.JSON(http.StatusBadRequest, common.BadRequestResponse{Message: "账号密码长度不符"})
 		return
 	}
 	config := conf.GetConfig()
-	password = base64.StdEncoding.EncodeToString(digest256(password + config.BaseAPI.Salt))
+	password = common.Digest256([]byte(password + config.BaseAPI.Salt))
 	var (
 		err  error
 		res1 *db.InsertUserResp
@@ -175,7 +174,7 @@ func SignUp(c *gin.Context) {
 func SignIn(c *gin.Context) {
 	password := c.Request.FormValue("password")
 	email := c.Request.FormValue("email")
-	logger.Debug("SignIn ", password, email)
+	logger.Debugf("SignIn email:%v password:%v", email, password)
 	var (
 		res1 *db.QueryUserResp
 		err  error
@@ -197,7 +196,7 @@ func SignIn(c *gin.Context) {
 		return
 	}
 
-	if res1.User.Password != base64.StdEncoding.EncodeToString(digest256(password+config.BaseAPI.Salt)) {
+	if res1.User.Password != common.Digest256([]byte(password+config.BaseAPI.Salt)) {
 		c.JSON(http.StatusForbidden, common.ForbiddenResponse{
 			Message: "账户密码错误",
 		})

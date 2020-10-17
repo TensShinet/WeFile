@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"crypto/sha256"
 	"fmt"
 	"github.com/TensShinet/WeFile/service/common"
 	"github.com/gin-contrib/sessions"
@@ -11,13 +10,6 @@ import (
 	"strconv"
 	"time"
 )
-
-func digest256(src string) []byte {
-	var res []byte
-	temp := sha256.Sum256([]byte(src))
-	res = temp[:]
-	return res
-}
 
 // TODO: 生成 csrf token 更好的办法
 func getCSRFToken() string {
