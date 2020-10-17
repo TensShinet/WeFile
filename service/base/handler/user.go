@@ -16,6 +16,7 @@ import (
 	"github.com/TensShinet/WeFile/conf"
 	"github.com/TensShinet/WeFile/service/common"
 	db "github.com/TensShinet/WeFile/service/db/proto"
+	"github.com/TensShinet/WeFile/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
@@ -119,7 +120,7 @@ func SignUp(c *gin.Context) {
 		return
 	}
 	config := conf.GetConfig()
-	password = common.Digest256([]byte(password + config.BaseAPI.Salt))
+	password = utils.Digest256([]byte(password + config.BaseAPI.Salt))
 	var (
 		err  error
 		res1 *db.InsertUserResp
@@ -196,7 +197,7 @@ func SignIn(c *gin.Context) {
 		return
 	}
 
-	if res1.User.Password != common.Digest256([]byte(password+config.BaseAPI.Salt)) {
+	if res1.User.Password != utils.Digest256([]byte(password+config.BaseAPI.Salt)) {
 		c.JSON(http.StatusForbidden, common.ForbiddenResponse{
 			Message: "账户密码错误",
 		})

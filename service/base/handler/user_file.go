@@ -174,7 +174,7 @@ func GetUploadAddress(c *gin.Context) {
 	c.Header("Authorization", "Bearer "+res.Token)
 	config := conf.GetConfig()
 	c.JSON(http.StatusOK, gin.H{
-		"address": config.BaseAPI.UploadAPIAddress,
+		"address": config.BaseAPI.FileAPIAddress,
 	})
 }
 
@@ -264,6 +264,6 @@ func GetDownloadAddress(c *gin.Context) {
 
 	config := conf.GetConfig()
 	c.JSON(http.StatusOK, gin.H{
-		"address": config.BaseAPI.DownloadAPIAddress,
+		"address": config.BaseAPI.FileAPIAddress,
 	})
 }

@@ -10,21 +10,28 @@ import (
 
 type Config struct {
 	LogLevel string        `yaml:"log_level"` // log 级别
+	NodeID   int           `yaml:"node_id"`   // 节点 id
 	Etcd     EtcdConfig    `yaml:"etcd"`      // etcd 配置
 	DB       DBConfig      `yaml:"db"`        // DB 配置
 	Redis    RedisConfig   `yaml:"redis"`     // redis 配置
-	NodeID   int           `yaml:"node_id"`   // 节点 id
 	JWT      JWTConfig     `yaml:"jwt"`       // jwt 配置
 	Service  ServiceConfig `yaml:"service"`   // service 配置
 	BaseAPI  BaseAPIConfig `yaml:"base_api"`  // base api 配置
+	FileAPI  FileAPIConfig `yaml:"file_api"`  // file api 配置
+}
+
+type FileAPIConfig struct {
+	Address        string `yaml:"address"`          // 监听地址
+	LocalTempStore string `yaml:"local_temp_store"` // 暂存地址
 }
 
 type BaseAPIConfig struct {
-	Address        string `yaml:"address"`         // 监听地址
-	Salt           string `yaml:"salt"`            // 密码盐值
-	SessionSecrete string `yaml:"session_secrete"` // session secrete
-	SessionMaxAge  int    `yaml:"session_max_age"` // session 存活时间 单位分钟
-	SessionName    string `yaml:"session_name"`    // cookie 中 session name
+	Address        string `yaml:"address"`          // 监听地址
+	Salt           string `yaml:"salt"`             // 密码盐值
+	SessionSecrete string `yaml:"session_secrete"`  // session secrete
+	SessionMaxAge  int    `yaml:"session_max_age"`  // session 存活时间 单位分钟
+	SessionName    string `yaml:"session_name"`     // cookie 中 session name
+	FileAPIAddress string `yaml:"file_api_address"` // file api 地址
 }
 
 type ServiceConfig struct {
