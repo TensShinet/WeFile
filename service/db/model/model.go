@@ -22,49 +22,51 @@ func Init() {
 }
 
 type User struct {
-	ID             int64 `gorm:"primary_key:true"`
-	RoleID         int64
-	Name           string `gorm:"index;size:64"`
-	Password       string `gorm:"size:256"`
-	Email          string `gorm:"uniqueIndex;size:64"`
-	Phone          string `gorm:"size:64"`
-	EmailValidated bool
-	PhoneValidated bool
-	SignUpAt       time.Time
-	LastActiveAt   time.Time
-	Profile        string `gorm:"size:255"`
-	Status         int
+	ID             int64     `gorm:"not null;primary_key:true"`
+	RoleID         int64     `gorm:"not null;default:100000"`
+	Name           string    `gorm:"not null;index;size:64"`
+	Password       string    `gorm:"not null;size:64"`
+	Email          string    `gorm:"not null;uniqueIndex;size:64"`
+	Phone          string    `gorm:"not null;size:64"`
+	EmailValidated bool      `gorm:"not null;default false"`
+	PhoneValidated bool      `gorm:"not null;default false"`
+	SignUpAt       time.Time `gorm:"not null;default NOW()"`
+	LastActiveAt   time.Time `gorm:"not null;default NOW()"`
+	Profile        string    `gorm:"not null;size:255"`
+	Status         int       `gorm:"not null;default 0"`
 }
 
 type UserFile struct {
-	ID           int64  `gorm:"primary_key:true"`
-	UserID       int64  `gorm:"index:idx_user"`
-	Directory    string `gorm:"size:1024"`
-	FileName     string `gorm:"size:255"`
-	FileID       int64
-	IsDirectory  bool
-	UploadAt     time.Time
-	LastUpdateAt time.Time
-	Status       int
+	ID           int64     `gorm:"not null;primary_key:true"`
+	UserID       int64     `gorm:"not null;index:idx_user"`
+	Directory    string    `gorm:"not null;default /;size:2048"`
+	FileName     string    `gorm:"not null;size:255"`
+	Hash         string    `gorm:"not null;uniqueIndex;size:64"` // UserID + Directory + FileName 的 hash 保证唯一性
+	FileID       int64     `gorm:"not null;default 0;"`
+	IsDirectory  bool      `gorm:"not null;default false;"`
+	UploadAt     time.Time `gorm:"not null;default NOW()"`
+	LastUpdateAt time.Time `gorm:"not null;default NOW()"`
+	Status       int       `gorm:"not null;default 0"`
 }
 
 type File struct {
-	ID            int64  `gorm:"primary_key:true"`
-	Hash          string `gorm:"index;size:64"`
-	HashAlgorithm string `gorm:"size:64"`
-	Size          int64
-	Count         int // 引用计数
-	Location      string
-	CreateAt      time.Time
-	UpdateAt      time.Time
-	Status        int
+	ID            int64     `gorm:"not null;primary_key:true"`
+	Hash          string    `gorm:"not null;uniqueIndex;size:64"`
+	HashAlgorithm string    `gorm:"not null;size:32"`
+	Size          int64     `gorm:"not null;default 0;"`
+	Count         int       `gorm:"not null;default 0;"` // 引用计数
+	Location      string    `gorm:"not null;default /;size:2048"`
+	CreateAt      time.Time `gorm:"not null;default NOW()"`
+	UpdateAt      time.Time `gorm:"not null;default NOW()"`
+	Status        int       `gorm:"not null;default 0"`
 }
 
+// session 表基本不用了
 type Session struct {
-	ID        int64  `gorm:"primary_key:true"`
-	Token     string `gorm:"size:32"`
-	UserID    int64  `gorm:"uniqueIndex;"`
-	CreateAt  time.Time
-	ExpireAt  time.Time
-	CSRFToken string `gorm:"size:32"`
+	ID        int64     `gorm:"not null;primary_key:true"`
+	Token     string    `gorm:"not null;size:32"`
+	UserID    int64     `gorm:"not null;uniqueIndex;"`
+	CreateAt  time.Time `gorm:"not null;default NOW()"`
+	ExpireAt  time.Time `gorm:"not null;default NOW()"`
+	CSRFToken string    `gorm:"not null;size:32"`
 }
