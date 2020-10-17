@@ -6,7 +6,6 @@ import (
 	"github.com/TensShinet/WeFile/conf"
 	"github.com/TensShinet/WeFile/logging"
 	"github.com/TensShinet/WeFile/service/auth/proto"
-	"github.com/TensShinet/WeFile/service/common"
 	"github.com/dgrijalva/jwt-go"
 	"time"
 )
@@ -55,32 +54,17 @@ func (s *Service) DownloadJWTDecode(_ context.Context, req *proto.DecodeReq, res
 	})
 
 	if err != nil {
-		if token != nil && !token.Valid {
-			res.Err = &proto.Error{
-				Code:    common.UnauthorizedCode,
-				Message: err.Error(),
-			}
-		} else {
-			res.Err = &proto.Error{
-				Code:    -1,
-				Message: err.Error(),
-			}
-			return err
-		}
+		return err
 	}
 
-	if token != nil {
-		claims, _ := token.Claims.(jwt.MapClaims)
+	claims, _ := token.Claims.(jwt.MapClaims)
 
-		fileID, _ := claims["file_id"].(float64)
-		fileName, _ := claims["file_name"].(string)
+	fileID, _ := claims["file_id"].(float64)
+	fileName, _ := claims["file_name"].(string)
 
-		res.FileMeta = &proto.DownloadFileMeta{
-			FileID:   int64(fileID),
-			FileName: fileName,
-		}
-	} else {
-		logger.Panic("impossible!")
+	res.FileMeta = &proto.DownloadFileMeta{
+		FileID:   int64(fileID),
+		FileName: fileName,
 	}
 
 	return nil
@@ -128,35 +112,19 @@ func (s *Service) UploadJWTDecode(_ context.Context, req *proto.DecodeReq, res *
 	})
 
 	if err != nil {
-		if token != nil && !token.Valid {
-			res.Err = &proto.Error{
-				Code:    common.UnauthorizedCode,
-				Message: err.Error(),
-			}
-		} else {
-			res.Err = &proto.Error{
-				Code:    -1,
-				Message: err.Error(),
-			}
-			return err
-		}
+		return err
 	}
 
-	if token != nil {
+	claims, _ := token.Claims.(jwt.MapClaims)
 
-		claims, _ := token.Claims.(jwt.MapClaims)
+	userID, _ := claims["user_id"].(float64)
+	fileName, _ := claims["file_name"].(string)
+	directory, _ := claims["directory"].(string)
 
-		userID, _ := claims["user_id"].(float64)
-		fileName, _ := claims["file_name"].(string)
-		directory, _ := claims["directory"].(string)
-
-		res.FileMeta = &proto.UploadFileMeta{
-			FileName:  fileName,
-			UserID:    int64(userID),
-			Directory: directory,
-		}
-	} else {
-		logger.Panic("impossible!")
+	res.FileMeta = &proto.UploadFileMeta{
+		FileName:  fileName,
+		UserID:    int64(userID),
+		Directory: directory,
 	}
 
 	return nil
