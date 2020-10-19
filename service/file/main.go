@@ -1,9 +1,8 @@
 package main
 
 import (
-	"github.com/TensShinet/WeFile/conf"
 	"github.com/TensShinet/WeFile/logging"
-	fileConf "github.com/TensShinet/WeFile/service/file/conf"
+	"github.com/TensShinet/WeFile/service/file/conf"
 	"github.com/TensShinet/WeFile/service/file/handler"
 	"github.com/TensShinet/WeFile/service/file/router"
 	"github.com/micro/cli/v2"
@@ -12,11 +11,9 @@ import (
 	"time"
 )
 
-var logger = logging.GetLogger("base_service")
+var logger = logging.GetLogger("file_service")
 
 func registerService() {
-	fileConf.Init()
-
 	config := conf.GetConfig()
 
 	// 使用etcd注册
@@ -46,5 +43,6 @@ func registerService() {
 }
 
 func main() {
+	conf.Init("file_conf.yml")
 	registerService()
 }

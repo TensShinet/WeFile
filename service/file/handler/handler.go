@@ -1,10 +1,10 @@
 package handler
 
 import (
-	"github.com/TensShinet/WeFile/conf"
 	"github.com/TensShinet/WeFile/logging"
 	auth "github.com/TensShinet/WeFile/service/auth/proto"
 	db "github.com/TensShinet/WeFile/service/db/proto"
+	"github.com/TensShinet/WeFile/service/file/conf"
 	"github.com/micro/go-micro/v2"
 	"github.com/micro/go-micro/v2/registry"
 	"github.com/micro/go-micro/v2/registry/etcd"
@@ -13,13 +13,13 @@ import (
 var (
 	dbService   db.Service
 	authService auth.Service
-	logger      = logging.GetLogger("download_service_handler")
+	logger      = logging.GetLogger("file_service_handler")
 )
 
 func Init() {
 	config := conf.GetConfig()
 	micReg := etcd.NewRegistry(func(options *registry.Options) {
-		options.Addrs = config.Etcd.EndPoints
+		options.Addrs = config.Service.Etcd.EndPoints
 	})
 	// 新建服务
 	service := micro.NewService(
