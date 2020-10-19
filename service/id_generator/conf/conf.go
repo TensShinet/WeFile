@@ -10,18 +10,12 @@ import (
 
 type Config struct {
 	Service common.ServiceConfig `yaml:"service"`
-	FileAPI FileAPIConfig        `yaml:"file_api"`
-}
-
-type FileAPIConfig struct {
-	Address        string `yaml:"address"`          // 监听地址
-	LocalTempStore string `yaml:"local_temp_store"` // 暂存地址
 }
 
 var (
 	once   sync.Once
 	c      = &Config{}
-	logger = logging.GetLogger("file_service_conf")
+	logger = logging.GetLogger("idg_service_conf")
 )
 
 func Init(filepath string) {

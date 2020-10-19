@@ -3,8 +3,8 @@ package handler
 import (
 	"context"
 	"fmt"
-	"github.com/TensShinet/WeFile/conf"
 	"github.com/TensShinet/WeFile/logging"
+	"github.com/TensShinet/WeFile/service/auth/conf"
 	"github.com/TensShinet/WeFile/service/auth/proto"
 	"github.com/dgrijalva/jwt-go"
 	"time"

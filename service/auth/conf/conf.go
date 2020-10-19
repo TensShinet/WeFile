@@ -10,18 +10,19 @@ import (
 
 type Config struct {
 	Service common.ServiceConfig `yaml:"service"`
-	FileAPI FileAPIConfig        `yaml:"file_api"`
+	JWT     JWTConfig            `yaml:"jwt"` // jwt 配置
 }
 
-type FileAPIConfig struct {
-	Address        string `yaml:"address"`          // 监听地址
-	LocalTempStore string `yaml:"local_temp_store"` // 暂存地址
+// TODO: JWT 详细配置
+type JWTConfig struct {
+	ValidTime int    `yaml:"valid_time"` // jwt token 有效时间 单位秒
+	Secret    string `yaml:"secret"`     // jwt 秘钥
 }
 
 var (
 	once   sync.Once
 	c      = &Config{}
-	logger = logging.GetLogger("file_service_conf")
+	logger = logging.GetLogger("auth_service_conf")
 )
 
 func Init(filepath string) {

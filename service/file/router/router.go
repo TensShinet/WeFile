@@ -1,8 +1,8 @@
 package router
 
 import (
-	"github.com/TensShinet/WeFile/conf"
 	"github.com/TensShinet/WeFile/logging"
+	"github.com/TensShinet/WeFile/service/file/conf"
 	"github.com/TensShinet/WeFile/service/file/handler"
 	"github.com/gin-gonic/gin"
 )

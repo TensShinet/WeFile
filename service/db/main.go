@@ -1,9 +1,8 @@
 package main
 
 import (
-	"github.com/TensShinet/WeFile/conf"
 	"github.com/TensShinet/WeFile/logging"
-	dbConf "github.com/TensShinet/WeFile/service/db/conf"
+	"github.com/TensShinet/WeFile/service/db/conf"
 	"github.com/TensShinet/WeFile/service/db/conn"
 	"github.com/TensShinet/WeFile/service/db/handler"
 	"github.com/TensShinet/WeFile/service/db/model"
@@ -20,11 +19,11 @@ var logger = logging.GetLogger("db_service")
 // db service 只针对各个模块对数据库或者内存数据库的操作
 // 基本没有逻辑代码
 func main() {
-	dbConf.Init()
+	conf.Init("db_conf.yml")
 
 	config := conf.GetConfig()
 	micReg := etcd.NewRegistry(func(options *registry.Options) {
-		options.Addrs = config.Etcd.EndPoints
+		options.Addrs = config.Service.Etcd.EndPoints
 	})
 	// 新建服务
 	service := micro.NewService(

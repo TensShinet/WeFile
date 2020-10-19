@@ -13,7 +13,7 @@
 package handler
 
 import (
-	"github.com/TensShinet/WeFile/conf"
+	"github.com/TensShinet/WeFile/service/base/conf"
 	"github.com/TensShinet/WeFile/service/common"
 	db "github.com/TensShinet/WeFile/service/db/proto"
 	"github.com/TensShinet/WeFile/utils"

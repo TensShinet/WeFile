@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/TensShinet/WeFile/conf"
 	"github.com/TensShinet/WeFile/logging"
+	"github.com/TensShinet/WeFile/service/auth/conf"
 	"github.com/TensShinet/WeFile/service/auth/handler"
 	"github.com/TensShinet/WeFile/service/auth/proto"
 	"github.com/micro/go-micro/v2"
@@ -14,11 +14,9 @@ import (
 var logger = logging.GetLogger("auth_service")
 
 func startRPCService() {
-	// 初始化配置
-	conf.Init("auth_conf.yml")
 	config := conf.GetConfig()
 	micReg := etcd.NewRegistry(func(options *registry.Options) {
-		options.Addrs = config.Etcd.EndPoints
+		options.Addrs = config.Service.Etcd.EndPoints
 	})
 	// 新建服务
 	service := micro.NewService(
@@ -45,5 +43,7 @@ func startRPCService() {
 // jwt encode: 将一些关键信息 encode 之后返回
 // jwt decode: 将一些关键信息 decode 之后返回，判断是否过期，判断签名是否一致
 func main() {
+	// 初始化配置
+	conf.Init("auth_conf.yml")
 	startRPCService()
 }

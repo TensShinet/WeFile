@@ -2,10 +2,10 @@ package handler
 
 import (
 	"bytes"
-	"github.com/TensShinet/WeFile/conf"
 	auth "github.com/TensShinet/WeFile/service/auth/proto"
 	"github.com/TensShinet/WeFile/service/common"
 	db "github.com/TensShinet/WeFile/service/db/proto"
+	"github.com/TensShinet/WeFile/service/file/conf"
 	"github.com/TensShinet/WeFile/utils"
 	"github.com/gin-gonic/gin"
 	"io"

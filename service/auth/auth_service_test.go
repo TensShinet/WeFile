@@ -2,10 +2,9 @@ package main
 
 import (
 	"context"
-	"github.com/TensShinet/WeFile/conf"
+	"github.com/TensShinet/WeFile/service/auth/conf"
 	"github.com/TensShinet/WeFile/service/auth/handler"
 	"github.com/TensShinet/WeFile/service/auth/proto"
-	"github.com/TensShinet/WeFile/service/common"
 	"testing"
 	"time"
 )
@@ -32,7 +31,7 @@ func TestDownload(t *testing.T) {
 }
 
 func TestUpload(t *testing.T) {
-	conf.Init("auth_conf.yml")
+
 	s := handler.Service{}
 	res := &proto.EncodeResp{}
 	if err := s.UploadJWTEncode(context.TODO(), &proto.UploadFileMeta{
@@ -56,7 +55,8 @@ func TestUpload(t *testing.T) {
 
 func TestDownloadAuth(t *testing.T) {
 	// 设置超时时间 1s
-	conf.Init("auth_conf.yml")
+	config := conf.GetConfig()
+	config.JWT.ValidTime = 1
 	s := handler.Service{}
 	res := &proto.EncodeResp{}
 	if err := s.DownloadJWTEncode(context.TODO(), &proto.DownloadFileMeta{
@@ -70,11 +70,8 @@ func TestDownloadAuth(t *testing.T) {
 	time.Sleep(time.Second * 2)
 	res1 := &proto.DownloadJWTDecodeResp{}
 	if err := s.DownloadJWTDecode(context.TODO(), &proto.DecodeReq{Token: res.Token}, res1); err != nil {
-		if res1.Err.Code == common.UnauthorizedCode {
-			t.Log("unauthorized!")
-		} else {
-			t.Fatal(err)
-		}
+		t.Logf("token is expired:%v", err.Error())
+		return
 	}
 	if res1.FileMeta.FileID != 123456 || res1.FileMeta.FileName != "ts666" {
 		t.Fatal("Decode failed ", res1.FileMeta.FileID, res1.FileMeta.FileName)

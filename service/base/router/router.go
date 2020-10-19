@@ -1,8 +1,8 @@
 package router
 
 import (
-	"github.com/TensShinet/WeFile/conf"
 	"github.com/TensShinet/WeFile/logging"
+	"github.com/TensShinet/WeFile/service/base/conf"
 	"github.com/TensShinet/WeFile/service/base/handler"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/redis"

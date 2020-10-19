@@ -1,17 +1,17 @@
 package main
 
 import (
-	"github.com/TensShinet/WeFile/conf"
 	"github.com/TensShinet/WeFile/logging"
+	"github.com/TensShinet/WeFile/service/id_generator/conf"
 	"github.com/TensShinet/WeFile/service/id_generator/handler"
-	proto "github.com/TensShinet/WeFile/service/id_generator/proto"
+	"github.com/TensShinet/WeFile/service/id_generator/proto"
 	"github.com/micro/go-micro/v2"
 	"github.com/micro/go-micro/v2/registry"
 	"github.com/micro/go-micro/v2/registry/etcd"
 	"time"
 )
 
-var logger = logging.GetLogger("id_generator")
+var logger = logging.GetLogger("idg_service")
 
 func main() {
 	// 初始化配置
@@ -19,7 +19,7 @@ func main() {
 
 	config := conf.GetConfig()
 	micReg := etcd.NewRegistry(func(options *registry.Options) {
-		options.Addrs = config.Etcd.EndPoints
+		options.Addrs = config.Service.Etcd.EndPoints
 	})
 
 	// 新建服务
