@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
-	"github.com/TensShinet/WeFile/conf"
 	"github.com/TensShinet/WeFile/service/common"
+	"github.com/TensShinet/WeFile/service/db/conf"
 	"github.com/TensShinet/WeFile/service/db/conn"
 	"github.com/TensShinet/WeFile/service/db/handler"
 	"github.com/TensShinet/WeFile/service/db/model"

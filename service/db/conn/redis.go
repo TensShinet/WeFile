@@ -1,7 +1,7 @@
 package conn
 
 import (
-	"github.com/TensShinet/WeFile/conf"
+	"github.com/TensShinet/WeFile/service/db/conf"
 	"github.com/go-redis/redis"
 	"sync"
 )

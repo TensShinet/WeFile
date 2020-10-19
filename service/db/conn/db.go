@@ -1,7 +1,7 @@
 package conn
 
 import (
-	"github.com/TensShinet/WeFile/conf"
+	"github.com/TensShinet/WeFile/service/db/conf"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"sync"

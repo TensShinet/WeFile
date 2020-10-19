@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"github.com/TensShinet/WeFile/conf"
 	"github.com/TensShinet/WeFile/logging"
+	"github.com/TensShinet/WeFile/service/db/conf"
 	"github.com/TensShinet/WeFile/service/db/conn"
 	idg "github.com/TensShinet/WeFile/service/id_generator/proto"
 	"github.com/go-redis/redis"
@@ -30,7 +30,7 @@ func Init() {
 	}
 	config := conf.GetConfig()
 	micReg := etcd.NewRegistry(func(options *registry.Options) {
-		options.Addrs = config.Etcd.EndPoints
+		options.Addrs = config.Service.Etcd.EndPoints
 	})
 	// 新建服务
 	service := micro.NewService(
