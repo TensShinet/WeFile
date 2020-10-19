@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"github.com/TensShinet/WeFile/conf"
 	auth "github.com/TensShinet/WeFile/service/auth/proto"
+	"github.com/TensShinet/WeFile/service/base/conf"
 	"github.com/TensShinet/WeFile/service/common"
 	db "github.com/TensShinet/WeFile/service/db/proto"
 	"github.com/gin-gonic/gin"

@@ -2,9 +2,9 @@ package handler
 
 import (
 	"encoding/gob"
-	"github.com/TensShinet/WeFile/conf"
 	"github.com/TensShinet/WeFile/logging"
 	auth "github.com/TensShinet/WeFile/service/auth/proto"
+	"github.com/TensShinet/WeFile/service/base/conf"
 	db "github.com/TensShinet/WeFile/service/db/proto"
 	"github.com/micro/go-micro/v2"
 	"github.com/micro/go-micro/v2/registry"
@@ -29,7 +29,7 @@ const (
 func Init() {
 	config := conf.GetConfig()
 	micReg := etcd.NewRegistry(func(options *registry.Options) {
-		options.Addrs = config.Etcd.EndPoints
+		options.Addrs = config.Service.Etcd.EndPoints
 	})
 	// 新建服务
 	service := micro.NewService(
