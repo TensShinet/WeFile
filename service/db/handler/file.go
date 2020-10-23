@@ -18,9 +18,9 @@ func (s *Service) QueryFileMeta(ctx context.Context, req *proto.QueryFileMetaReq
 	var (
 		err error
 	)
-	logger.Infof("QueryFileMeta id=%v hash=%v", req.Id, req.Hash)
+	logger.Infof("QueryFileMeta id=%v hash=%v sampling_hash=%v", req.Id, req.Hash, req.SamplingHash)
 	file := model.File{}
-	err = db.Where("id = ? || hash = ?", req.Id, req.Hash).First(&file).Error
+	err = db.Where("id = ? || hash = ? || sampling_hash = ?", req.Id, req.Hash, req.SamplingHash).First(&file).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			logger.Infof("QueryFileMeta id=%v hash=%v not found", req.Id, req.Hash)

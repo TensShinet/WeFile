@@ -137,6 +137,7 @@ func TestUserFile(t *testing.T) {
 		},
 		FileMeta: &proto.FileMeta{
 			Hash:          "hash1234",
+			SamplingHash:  "samplingHash1234",
 			HashAlgorithm: "SHA256",
 			Size:          128,
 			Location:      "local",

@@ -10,20 +10,26 @@ import (
 	"time"
 )
 
+type UserFile struct {
+	model.UserFile
+	Size int64
+}
+
 // user_file 相关服务
 
 // 列出 用户 所在目录的所有文件
-//
-//
 func (s *Service) ListUserFile(ctx context.Context, req *proto.ListUserFileMetaReq, res *proto.ListUserFileMetaResp) (err error) {
 	logger.Infof("ListUserFile directory:%v userID:%v", req.Directory, req.UserID)
 	if req.Directory == "" {
 		req.Directory = "/"
 	}
-	var files []*model.UserFile
+	var files []*UserFile
 
 	// slice 不报 ErrRecordNotFound
-	if err = db.Where("user_id = ? and directory = ?", req.UserID, req.Directory).Find(&files).Error; err != nil {
+	if err = db.Raw("SELECT user_id, directory, file_name, file_id, is_directory, upload_at, last_update_at, user_files.status, files.size "+
+		"FROM user_files LEFT JOIN files "+
+		"ON user_files.file_id = files.id "+
+		"WHERE user_id = ? and directory = ?", req.UserID, req.Directory).Scan(&files).Error; err != nil {
 		logger.Errorf("ListUserFile failed, for the reason:%v", err)
 		return err
 	}
@@ -38,8 +44,11 @@ func (s *Service) ListUserFile(ctx context.Context, req *proto.ListUserFileMetaR
 			Directory:    f.Directory,
 			LastUpdateAt: f.LastUpdateAt.Unix(),
 			Status:       int32(f.Status),
+			Size:         files[i].Size,
 		}
+		logger.Debugf("files[%v].Size:%v", i, files[i].Size)
 	}
+
 	return
 }
 
@@ -81,6 +90,7 @@ func (s *Service) InsertUserFile(ctx context.Context, req *proto.InsertUserFileM
 			ID:            fileID,
 			Hash:          meta.Hash,
 			HashAlgorithm: meta.HashAlgorithm,
+			SamplingHash:  meta.SamplingHash,
 			Size:          meta.Size,
 			Location:      meta.Location,
 			CreateAt:      time.Unix(meta.CreateAt, 0),
@@ -101,9 +111,9 @@ func (s *Service) InsertUserFile(ctx context.Context, req *proto.InsertUserFileM
 		// 同一个目录不能重名
 		userFile := req.UserFileMeta
 		// 如果有一样的就回退
-		err = tx.Where("user_id = ? AND directory = ? AND file_name = ?", req.UserID, req.UserFileMeta.Directory, req.UserFileMeta.FileName).First(&model.UserFile{}).Error
+		hash := getUserFileHash(req.UserID, req.UserFileMeta.Directory, req.UserFileMeta.FileName)
+		err = tx.Where("hash = ?", hash).First(&model.UserFile{}).Error
 		if err == gorm.ErrRecordNotFound {
-			hash := getUserFileHash(req.UserID, req.UserFileMeta.Directory, req.UserFileMeta.FileName)
 			if err = tx.Create(&model.UserFile{
 				ID:           userFileID,
 				UserID:       req.UserID,
@@ -120,7 +130,9 @@ func (s *Service) InsertUserFile(ctx context.Context, req *proto.InsertUserFileM
 				return errConflict
 			}
 		} else if err != nil {
-			// 已存在相同的文件
+			return err
+		} else {
+			// 找到相同的文件
 			return errConflict
 		}
 		// 成功插入

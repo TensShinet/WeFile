@@ -53,6 +53,7 @@ type File struct {
 	ID            int64     `gorm:"not null;primary_key:true"`
 	Hash          string    `gorm:"not null;uniqueIndex;size:64"`
 	HashAlgorithm string    `gorm:"not null;size:32"`
+	SamplingHash  string    `gorm:"not null;index:idx_sampling_hash;size:64"`
 	Size          int64     `gorm:"not null;default 0;"`
 	Count         int       `gorm:"not null;default 0;"` // 引用计数
 	Location      string    `gorm:"not null;default /;size:2048"`
