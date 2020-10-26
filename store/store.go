@@ -1,10 +1,14 @@
 // 存储接口设计
 package store
 
-import "io"
+import (
+	"errors"
+	"io"
+)
 
 type File interface {
 	io.ReadWriteCloser
+	io.Seeker
 	Remove() error
 	Location() string
 	TotalHash() string
@@ -14,6 +18,7 @@ type File interface {
 
 type Chunk interface {
 	io.ReadWriteCloser
+	io.Seeker
 	Remove() error
 	RemoveAll() error
 }
@@ -25,6 +30,11 @@ type FileLimit struct {
 type ChunkLimit struct {
 	MaxSize int
 }
+
+var (
+	ErrChunkExists = errors.New("chunk exists")
+	ErrFileExists  = errors.New("file exists")
+)
 
 // Store 接口设计
 // TempFile TempChunk 都是暂存文件 通常是本地存储

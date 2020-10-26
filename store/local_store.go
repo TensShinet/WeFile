@@ -14,6 +14,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"syscall"
 )
 
 type LocalStore struct {
@@ -110,11 +111,14 @@ func (s *LocalStore) TempChunk(identifier string, chunkIndex int, chunkLimit Chu
 		file *os.File
 	)
 	c := &LocalChunk{
-		path:    filepath.Join(s.tempChunksPath, identifier),
+		path:    filepath.Join(s.tempChunksPath, identifier, utils.ParseIntToString(chunkIndex)),
 		maxSize: chunkLimit.MaxSize,
 	}
 
 	if file, err = utils.CreateFile(c.path); err != nil {
+		if err == syscall.EEXIST {
+			err = ErrChunkExists
+		}
 		return nil, err
 	}
 
@@ -135,10 +139,15 @@ func (s *LocalStore) SaveFile(file File) (File, error) {
 		path   string
 		osFile *os.File
 	)
-
-	path = filepath.Join(s.root, file.TotalHash())
+	path = filepath.Join(s.root, file.TotalHash(), file.TotalHash())
 	if osFile, err = utils.CreateFile(path); err != nil {
-		return nil, err
+		if err != syscall.EEXIST {
+			return nil, err
+		} else {
+			// 已经保存的 file 不需要再写
+			osFile = nil
+		}
+
 	}
 	buf := make([]byte, s.samplingChunkSize)
 	hashing := sha256.New()
@@ -153,13 +162,17 @@ func (s *LocalStore) SaveFile(file File) (File, error) {
 			hashing.Write(buf[:10])
 			hashing.Write(buf[n-10 : n])
 		} else {
-			hashing.Write(buf)
+			hashing.Write(buf[:n])
 		}
-		if _, err = osFile.Write(buf[:n]); err != nil {
-			return nil, err
+		if osFile != nil {
+			if n, err = osFile.Write(buf[:n]); err != nil {
+				return nil, err
+			}
 		}
 	}
-	osFile.Close()
+	if osFile != nil {
+		osFile.Close()
+	}
 
 	f = &LocalFile{
 		path:         path,
@@ -182,9 +195,14 @@ func (s *LocalStore) MergeChunksToSave(chunksPath string, chunksNum int, fileLim
 
 	reader = newChunksReader(chunksPath, chunksNum)
 	tempFile, err = s.TempFile(fileLimit)
+	defer tempFile.Remove()
 	if _, err = io.Copy(tempFile, reader); err != nil {
 		return nil, err
 	}
+	if _, err = tempFile.Seek(0, 0); err != nil {
+		return nil, err
+	}
+
 	return s.SaveFile(tempFile)
 }
 
@@ -224,6 +242,7 @@ func (f *LocalFile) Write(p []byte) (n int, err error) {
 		_ = f.Remove()
 		return 0, ErrFileSizeExceed
 	}
+	f.currentSize += int64(n)
 	f.hashing.Write(p)
 	return f.File.Write(p)
 }
@@ -246,6 +265,7 @@ func (c *LocalChunk) Write(p []byte) (n int, err error) {
 		_ = c.Remove()
 		return 0, ErrChunkSizeExceed
 	}
+	c.currentSize += n
 	return c.File.Write(p)
 }
 
