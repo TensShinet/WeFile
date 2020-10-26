@@ -140,6 +140,203 @@
         }
       }
     },
+    "/multipart_upload": {
+      "post": {
+        "description": "分块上传接口",
+        "tags": [
+          "File"
+        ],
+        "summary": "MultipartUpload",
+        "operationId": "MultipartUpload",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "采用 jwt 验证方式",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          },
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "upload_id",
+                "chunk_index"
+              ],
+              "properties": {
+                "chunk_index": {
+                  "description": "块索引 下标从 1 开始",
+                  "type": "integer",
+                  "format": "int64",
+                  "x-go-name": "ChunkIndex"
+                },
+                "upload_id": {
+                  "description": "上传 id",
+                  "type": "string",
+                  "x-go-name": "UploadID"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/MultipartUploadResponse"
+          },
+          "400": {
+            "$ref": "#/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/multipart_upload/complete": {
+      "post": {
+        "description": "合并上传分块",
+        "tags": [
+          "File"
+        ],
+        "summary": "CompleteUpload",
+        "operationId": "CompleteUpload",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "采用 jwt 验证方式",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          },
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "upload_id"
+              ],
+              "properties": {
+                "upload_id": {
+                  "description": "上传 id",
+                  "type": "string",
+                  "x-go-name": "UploadID"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/UploadResponse"
+          },
+          "400": {
+            "$ref": "#/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "409": {
+            "$ref": "#/responses/ConflictError"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/multipart_upload/init": {
+      "post": {
+        "description": "分块上传接口",
+        "tags": [
+          "File"
+        ],
+        "summary": "MultipartUploadInit",
+        "operationId": "MultipartUploadInit",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "采用 jwt 验证方式",
+            "name": "Authorization",
+            "in": "header"
+          },
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "file_size"
+              ],
+              "properties": {
+                "file_size": {
+                  "description": "文件大小单位 Byte",
+                  "type": "string",
+                  "x-go-name": "FileSize"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/MultipartUploadInitResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/multipart_upload/progress": {
+      "get": {
+        "description": "合并上传分块",
+        "tags": [
+          "File"
+        ],
+        "summary": "UploadProgress",
+        "operationId": "UploadProgress",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "采用 jwt 验证方式",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "UploadID",
+            "description": "上传 id",
+            "name": "upload_id",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/UploadProgressResponse"
+          },
+          "400": {
+            "$ref": "#/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      }
+    },
     "/role/all": {
       "get": {
         "description": "获得所有角色",
@@ -183,6 +380,64 @@
           },
           "401": {
             "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/upload/try_fast": {
+      "post": {
+        "description": "尝试快速上传",
+        "tags": [
+          "File"
+        ],
+        "summary": "TryFastUpload",
+        "operationId": "TryFastUpload",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "采用 jwt 验证方式",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          },
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "file_hash": {
+                  "description": "全量 Hash",
+                  "type": "string",
+                  "x-go-name": "FileHash"
+                },
+                "file_sampling_hash": {
+                  "description": "采用抽样 Hash 的方式计算 Hash 快速上传",
+                  "type": "string",
+                  "x-go-name": "FileSamplingHash"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/UploadResponse"
+          },
+          "400": {
+            "$ref": "#/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/responses/NotFoundError"
+          },
+          "409": {
+            "$ref": "#/responses/ConflictError"
           },
           "500": {
             "$ref": "#/responses/ErrorResponse"
@@ -324,6 +579,22 @@
     }
   },
   "definitions": {
+    "ChunkInfo": {
+      "type": "object",
+      "properties": {
+        "chunk_index": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ChunkIndex"
+        },
+        "size": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Size"
+        }
+      },
+      "x-go-package": "github.com/TensShinet/WeFile/service/file/handler"
+    },
     "File": {
       "type": "object",
       "properties": {
@@ -357,6 +628,32 @@
         }
       },
       "x-go-package": "github.com/TensShinet/WeFile/service/base/handler"
+    },
+    "MultipartUploadInfo": {
+      "description": "ChunkSize ChunkCount int 足矣 100TB 没问题",
+      "type": "object",
+      "properties": {
+        "chunk_count": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ChunkCount"
+        },
+        "chunk_size": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "ChunkSize"
+        },
+        "file_size": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "FileSize"
+        },
+        "upload_id": {
+          "type": "string",
+          "x-go-name": "UploadID"
+        }
+      },
+      "x-go-package": "github.com/TensShinet/WeFile/service/file/handler"
     },
     "NewUser": {
       "type": "object",
@@ -456,6 +753,14 @@
     }
   },
   "responses": {
+    "AcceptedResponse": {
+      "description": "Accepted Response",
+      "headers": {
+        "message": {
+          "type": "string"
+        }
+      }
+    },
     "AddressResponse": {
       "description": "Address",
       "schema": {
@@ -533,6 +838,30 @@
         }
       }
     },
+    "MultipartUploadInitResponse": {
+      "description": "Multipart Upload Init Response",
+      "schema": {
+        "$ref": "#/definitions/MultipartUploadInfo"
+      },
+      "headers": {
+        "Authorization": {
+          "type": "string",
+          "description": "采用 jwt 的方法认证 更新认证信息"
+        }
+      }
+    },
+    "MultipartUploadResponse": {
+      "description": "Multipart Upload Response",
+      "schema": {
+        "$ref": "#/definitions/ChunkInfo"
+      },
+      "headers": {
+        "Authorization": {
+          "type": "string",
+          "description": "采用 jwt 的方法认证 更新认证信息"
+        }
+      }
+    },
     "NotFoundError": {
       "description": "NotFound Error",
       "headers": {
@@ -555,6 +884,29 @@
       "headers": {
         "message": {
           "type": "string"
+        }
+      }
+    },
+    "UploadProgressResponse": {
+      "description": "上传进度",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "chunks": {
+            "description": "chunk 数组\n\n编号哪些 chunk 上传了",
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "x-go-name": "Chunks"
+          }
+        }
+      },
+      "headers": {
+        "Authorization": {
+          "type": "string",
+          "description": "采用 jwt 的方法认证 更新认证信息"
         }
       }
     },
