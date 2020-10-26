@@ -13,6 +13,7 @@ import (
 var (
 	dbService   db.Service
 	authService auth.Service
+	fileStore   store.Store
 	logger      = logging.GetLogger("file_service_handler")
 )
 
@@ -29,4 +30,10 @@ func Init() {
 	dbService = db.NewService("go.micro.service.db", service.Client())
 	authService = auth.NewService("go.micro.service.auth", service.Client())
 
+	var (
+		err error
+	)
+	if fileStore, err = store.NewLocalStore(config.FileAPI.LocalTempStore, config.SamplingChunkSize); err != nil {
+		logger.Panicf("init failed, for the reason:%v", err)
+	}
 }
