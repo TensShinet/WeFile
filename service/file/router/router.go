@@ -22,7 +22,14 @@ func Init() {
 	v1 := router.Group("/api/v1")
 
 	uploadAPI := v1.Group("/upload", handler.UploadAuthorizeMiddleware())
+	uploadAPI.POST("try_fast", handler.TryFastUpload)
 	uploadAPI.POST("", handler.Upload)
+
+	multipartUploadAPI := v1.Group("/multipart_upload", handler.UploadAuthorizeMiddleware(), handler.UpdateAuthorizeMiddleware())
+	multipartUploadAPI.POST("", handler.MultipartUpload)
+	multipartUploadAPI.POST("init", handler.MultipartUploadInit)
+	multipartUploadAPI.POST("complete", handler.CompleteUpload)
+	multipartUploadAPI.POST("progress", handler.UploadProgress)
 
 	downloadAPI := v1.Group("/download", handler.DownloadAuthorizeMiddleware())
 	downloadAPI.GET("", handler.Download)

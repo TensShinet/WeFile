@@ -48,6 +48,19 @@ func UploadAuthorizeMiddleware() gin.HandlerFunc {
 	}
 }
 
+// 更新 Authorize 信息
+func UpdateAuthorizeMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		val, _ := c.Get(defaultAuthKey)
+		fileMeta, _ := val.(*auth.UploadFileMeta)
+
+		res, _ := authService.UploadJWTEncode(c, fileMeta)
+		logger.Debugf("UpdateAuthorizeMiddleware token:%v", res.Token)
+		c.Header("Authorization", "Bearer "+res.Token)
+		c.Next()
+	}
+}
+
 // download jwt 认证中间件
 func DownloadAuthorizeMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {

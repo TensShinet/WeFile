@@ -1,18 +1,13 @@
 package handler
 
 import (
-	"bytes"
 	auth "github.com/TensShinet/WeFile/service/auth/proto"
 	"github.com/TensShinet/WeFile/service/common"
 	db "github.com/TensShinet/WeFile/service/db/proto"
-	"github.com/TensShinet/WeFile/service/file/conf"
-	"github.com/TensShinet/WeFile/utils"
+	"github.com/TensShinet/WeFile/store"
 	"github.com/gin-gonic/gin"
 	"io"
-	"io/ioutil"
 	"net/http"
-	"os"
-	"path/filepath"
 	"time"
 )
 
@@ -50,78 +45,152 @@ type UploadResponse struct {
 //		 401: UnauthorizedResponse
 //       500: ErrorResponse
 func Upload(c *gin.Context) {
-	val, ok := c.Get(defaultAuthKey)
-	if !ok {
-		c.JSON(http.StatusInternalServerError, common.ErrorResponse{Message: "auth load failed"})
-		return
-	}
+
+	var (
+		err       error
+		tempFile  store.File
+		savedFile store.File
+	)
+	val, _ := c.Get(defaultAuthKey)
 	fileMeta, _ := val.(*auth.UploadFileMeta)
 	file, head, err := c.Request.FormFile("file")
-	if err != nil {
-		logger.Infof("Upload StatusBadRequest err:%v", err.Error())
-		c.JSON(http.StatusBadRequest, common.BadRequestResponse{Message: err.Error()})
+	if err != nil || head.Size > maxSmallFileSize {
+		if err == nil {
+			err = store.ErrFileSizeExceed
+		}
+		logger.Errorf("Upload Request.FormFile err:%v", err.Error())
+		common.SetSimpleResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 	logger.Infof("Upload filename:%v size:%v", head.Filename, head.Size)
 	defer file.Close()
 
-	// 小文件上传
-	buf := bytes.NewBuffer(nil)
-	if _, err := io.Copy(buf, file); err != nil {
-		logger.Errorf("Upload StatusInternalServerError err:%v", err.Error())
-		c.JSON(http.StatusInternalServerError, common.ErrorResponse{Message: err.Error()})
+	if tempFile, err = fileStore.TempFile(store.FileLimit{MaxSize: maxSmallFileSize}); err != nil {
+		logger.Errorf("Upload fileStore.TempFile err:%v", err.Error())
+		common.SetSimpleResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if _, err := io.Copy(tempFile, file); err != nil {
+		logger.Errorf("Upload io.Copy err:%v", err.Error())
+		common.SetSimpleResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	if head.Filename != fileMeta.FileName {
-		c.JSON(http.StatusBadRequest, common.BadRequestResponse{Message: "invalid filename"})
+		common.SetSimpleResponse(c, http.StatusBadRequest, "invalid filename")
 		return
 	}
 
-	config := conf.GetConfig()
-	// 本地保存小文件
-	hash := utils.Digest256(buf.Bytes())
-	location := filepath.Join(config.FileAPI.LocalTempStore, hash, hash)
-	err = os.MkdirAll(filepath.Join(config.FileAPI.LocalTempStore, hash), 0700)
-	logger.Infof("Upload WriteFile cao:%v", err)
-	if err := ioutil.WriteFile(location, buf.Bytes(), 0600); err != nil {
-		logger.Infof("Upload WriteFile err:%v", err.Error())
-		c.JSON(http.StatusInternalServerError, common.ErrorResponse{Message: err.Error()})
+	// 保存
+	if savedFile, err = fileStore.SaveFile(tempFile); err != nil {
+		common.SetSimpleResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-	logger.Debugf("Upload filename:%v hash:%v location:%v", head.Filename, hash, location)
+
+	// 删除暂存文件
+	_ = tempFile.Remove()
+
+	logger.Infof("Upload filename:%v Hash:%v location:%v", head.Filename, tempFile.TotalHash(), savedFile.Location())
 	// 插入数据库
 	t := time.Now().Unix()
-	res1, err := dbService.InsertUserFile(c, &db.InsertUserFileMetaReq{
-		UserFileMeta: &db.UserFileMeta{
-			FileName:     head.Filename,
-			IsDirectory:  false,
-			UploadAt:     t,
-			Directory:    fileMeta.Directory,
-			LastUpdateAt: t,
-			Status:       0,
-		},
-		FileMeta: &db.FileMeta{
-			Hash:          hash,
-			HashAlgorithm: "SHA256",
-			Size:          int64(len(buf.Bytes())),
-			Location:      location,
-			CreateAt:      t,
-			Status:        0,
-		},
-		UserID: fileMeta.UserID,
-	})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, common.ErrorResponse{Message: err.Error()})
-		_ = os.RemoveAll(location)
+	if err = insertUserFile(c, fileMeta, &db.FileMeta{
+		Hash:          savedFile.TotalHash(),
+		SamplingHash:  savedFile.SamplingHash(),
+		HashAlgorithm: "SHA256",
+		Size:          savedFile.Size(),
+		Location:      savedFile.Location(),
+		CreateAt:      t,
+		Status:        0,
+	}); err != nil {
+		// 删除保存的文件
+		_ = savedFile.Remove()
+	}
+}
+
+// swagger:parameters TryFastUpload
+type TryFastUploadParam struct {
+	// 采用 jwt 验证方式
+	// in: header
+	// Required: true
+	Authorization string
+	// in: body
+	Body struct {
+		// 采用抽样 Hash 的方式计算 Hash 快速上传
+		FileSamplingHash string `json:"file_sampling_hash"`
+
+		// 全量 Hash
+		FileHash string `json:"file_hash"`
+	}
+}
+
+// swagger:route POST /upload/try_fast File TryFastUpload
+//
+// TryFastUpload
+//
+// 尝试快速上传
+//
+//     Responses:
+//       200: UploadResponse
+//		 400: BadRequestResponse
+//		 404: NotFoundError
+//		 401: UnauthorizedResponse
+//		 409: ConflictError
+//       500: ErrorResponse
+
+// 尝试快速上传
+// 上传抽样 Hash 检查存不存在
+//  如果不存在，可以上传
+//	如果存在，需要全量 Hash
+// 上传全量 Hash 如果存在直接写入
+// 如果不存在需要上传文件
+func TryFastUpload(c *gin.Context) {
+	val, _ := c.Get(defaultAuthKey)
+	fileMeta, _ := val.(*auth.UploadFileMeta)
+
+	var (
+		err                        error
+		fileHash, fileSamplingHash string
+		queryFileResp              *db.QueryFileMetaResp
+	)
+	fileHash = c.Request.FormValue("file_hash")
+	fileSamplingHash = c.Request.FormValue("file_sampling_hash")
+
+	if fileHash == "" && fileSamplingHash == "" {
+		c.JSON(http.StatusBadRequest, common.BadRequestResponse{Message: "invalid file hash and file sampling sash"})
+		return
+	}
+	logger.Infof("TryFastUpload fileHash:%v fileSamplingHash:%v", fileHash, fileSamplingHash)
+	// Post 存在 sampling Hash
+	if fileHash == "" {
+		if queryFileResp, err = dbService.QueryFileMeta(c, &db.QueryFileMetaReq{
+			SamplingHash: fileSamplingHash,
+			Hash:         fileHash,
+		}); err != nil {
+			c.JSON(http.StatusInternalServerError, common.ErrorResponse{Message: err.Error()})
+			return
+		}
+		// 不存在 抽样 Hash 可以直接上传
+		if queryFileResp.Err != nil && queryFileResp.Err.Code == common.DBNotFoundCode {
+			c.JSON(http.StatusNotFound, common.Response404{Message: "file not found"})
+			return
+		}
+		// 存在 抽样 Hash 需要全量 Hash
+		c.JSON(http.StatusAccepted, common.AcceptedResponse{Message: "find sampling hash, need file total hash"})
 		return
 	}
 
-	c.JSON(http.StatusOK, UploadResponse{
-		FileID:      res1.FileMeta.FileID,
-		FileName:    head.Filename,
-		UploadAt:    time.Unix(t, 0),
-		IsDirectory: res1.FileMeta.IsDirectory,
-		FileSize:    int64(len(buf.Bytes())),
-	})
+	if queryFileResp, err = dbService.QueryFileMeta(c, &db.QueryFileMetaReq{
+		Hash: fileHash,
+	}); err != nil {
+		// 全量 Hash 不存在需要上传
+		c.JSON(http.StatusInternalServerError, common.ErrorResponse{Message: err.Error()})
+		return
+	}
+	// 全量 Hash 存在 直接上传
+	if queryFileResp.Err != nil && queryFileResp.Err.Code == common.DBNotFoundCode {
+		c.JSON(http.StatusNotFound, common.Response404{Message: "File not found"})
+		return
+	}
+	_ = insertUserFile(c, fileMeta, queryFileResp.FileMeta)
 }

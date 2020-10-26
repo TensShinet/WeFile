@@ -9,8 +9,11 @@ import (
 )
 
 type Config struct {
-	Service common.ServiceConfig `yaml:"service"`
-	FileAPI FileAPIConfig        `yaml:"file_api"`
+	Service           common.ServiceConfig `yaml:"service"`
+	FileAPI           FileAPIConfig        `yaml:"file_api"`
+	SamplingChunkSize int                  `yaml:"sampling_chunk_size"` // 抽样 hash 的 sampling chunk size
+	ChunkSize         int                  `yaml:"chunk_size"`
+	Redis             common.RedisConfig   `yaml:"redis"`
 }
 
 type FileAPIConfig struct {
@@ -22,6 +25,10 @@ var (
 	once   sync.Once
 	c      = &Config{}
 	logger = logging.GetLogger("file_service_conf")
+)
+
+const (
+	defaultChunkSize = 5 * 1024 * 1024
 )
 
 func Init(filepath string) {
@@ -39,9 +46,16 @@ func Init(filepath string) {
 		c.Service.Init()
 		// 是否开启 debug 模式
 		logging.SetGlobalLevel(logging.GetLevel(c.Service.LogLevel))
+		if c.ChunkSize == 0 {
+			c.ChunkSize = defaultChunkSize
+		}
 	})
 }
 
 func GetConfig() *Config {
+	if c == nil {
+		logger.Panic("get config before init")
+		return nil
+	}
 	return c
 }

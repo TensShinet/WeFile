@@ -117,7 +117,7 @@ message UserFileMeta {
   string directory = 5;       // 父目录 格式为 / /dir1 /dir1/dir2
   int64 lastUpdateAt = 6;     // 最后修改时间
   int32 status = 7;           // 文件状态
-  int64 size = 8;             // 文物大小 单位 Byte
+  int64 size = 8;             // 文件大小 单位 Byte
 }
 
 message DeleteUserFileReq {
