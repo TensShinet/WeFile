@@ -5,9 +5,9 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 )
 
 func Digest256(data []byte) string {
@@ -16,13 +16,22 @@ func Digest256(data []byte) string {
 	return hex.EncodeToString(s.Sum(nil))
 }
 
-// 将一个流的内容读完做 sha256 的 hash
-func StreamDigest256(src io.Reader) (string, error) {
-	t := sha256.New()
-	if _, err := io.Copy(t, src); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(t.Sum(nil)), nil
+func ParseInt(s string) (res int, err error) {
+	res, err = strconv.Atoi(s)
+	return
+}
+
+func ParseInt64(s string) (res int64, err error) {
+	res, err = strconv.ParseInt(s, 10, 64)
+	return
+}
+
+func ParseInt64ToString(s int64) string {
+	return strconv.FormatInt(s, 16)
+}
+
+func ParseIntToString(s int) string {
+	return strconv.Itoa(s)
 }
 
 func RandomString(n int) string {
