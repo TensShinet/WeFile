@@ -1,5 +1,7 @@
 package common
 
+import "fmt"
+
 const (
 	DBNotFoundCode   = 404
 	UnauthorizedCode = 401
@@ -12,6 +14,10 @@ const (
 
 	GeneralUserRoleName = "普通用户"
 	AdminRoleName       = "超级用户"
+)
+
+var (
+	ErrConflict = fmt.Errorf("conflict error")
 )
 
 // Sever Error
@@ -53,5 +59,12 @@ type UnauthorizedResponse struct {
 //
 // swagger:response BadRequestResponse
 type BadRequestResponse struct {
+	Message string `json:"message"`
+}
+
+// Accepted Response
+//
+// swagger:response AcceptedResponse
+type AcceptedResponse struct {
 	Message string `json:"message"`
 }
