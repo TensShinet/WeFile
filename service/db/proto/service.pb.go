@@ -864,7 +864,7 @@ type UserFileMeta struct {
 	Directory    string `protobuf:"bytes,5,opt,name=directory,proto3" json:"directory,omitempty"`        // 父目录 格式为 / /dir1 /dir1/dir2
 	LastUpdateAt int64  `protobuf:"varint,6,opt,name=lastUpdateAt,proto3" json:"lastUpdateAt,omitempty"` // 最后修改时间
 	Status       int32  `protobuf:"varint,7,opt,name=status,proto3" json:"status,omitempty"`             // 文件状态
-	Size         int64  `protobuf:"varint,8,opt,name=size,proto3" json:"size,omitempty"`                 // 文物大小 单位 Byte
+	Size         int64  `protobuf:"varint,8,opt,name=size,proto3" json:"size,omitempty"`                 // 文件大小 单位 Byte
 }
 
 func (x *UserFileMeta) Reset() {

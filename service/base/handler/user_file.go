@@ -109,6 +109,7 @@ func GetUserFileList(c *gin.Context) {
 			FileName:    list[i].FileName,
 			UploadAt:    time.Unix(list[i].UploadAt, 0),
 			IsDirectory: list[i].IsDirectory,
+			FileSize:    list[i].Size,
 		}
 	}
 
