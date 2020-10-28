@@ -20,7 +20,8 @@ func getCSRFToken() string {
 func Authorize() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var (
-			id  int64
+			id int64
+			//CSRFToken string
 			err error
 		)
 		defer func() {
@@ -36,9 +37,22 @@ func Authorize() gin.HandlerFunc {
 		session := sessions.Default(c)
 		u, ok := session.Get(defaultSessionKey).(UserSessionInfo)
 		if !ok || u.UserID != id {
-			logger.Debugf("id:(%v) UserID:(%v)", id, u.UserID)
+			logger.Debugf("id:%v UserID:%v", id, u.UserID)
 			err = fmt.Errorf("valid session")
 			return
+		}
+
+		// 检查 csrf token
+		if c.Request.Method == "DELETE" {
+			if c.Query("csrf_token") != u.CSRFToken {
+				err = fmt.Errorf("valid csrf_token")
+				return
+			}
+		} else if c.Request.Method == "POST" {
+			if c.Request.FormValue("csrf_token") != u.CSRFToken {
+				err = fmt.Errorf("valid csrf_token")
+				return
+			}
 		}
 
 		c.Next()
