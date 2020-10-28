@@ -7,6 +7,7 @@ import (
 	"github.com/TensShinet/WeFile/service/db/model"
 	"github.com/TensShinet/WeFile/service/db/proto"
 	"gorm.io/gorm"
+	"path/filepath"
 	"time"
 )
 
@@ -57,8 +58,8 @@ var errConflict = fmt.Errorf("confilct error")
 // 向 user_files 表中插入一条数据
 //
 // 得到预插入的 id
-// 向 files 表中创建或获取一条数据
-// 更新 file 引用计数
+// 如果不是目录 向 files 表中创建或获取一条数据
+// 如果不是目录 更新 file 引用计数
 // 向 user_files 表中插入一条数据 如果冲突 返回 errConflict 事务回退
 func (s *Service) InsertUserFile(ctx context.Context, req *proto.InsertUserFileMetaReq, res *proto.InsertUserFileMetaResp) error {
 
@@ -82,35 +83,46 @@ func (s *Service) InsertUserFile(ctx context.Context, req *proto.InsertUserFileM
 		var (
 			err error
 		)
-		meta := req.FileMeta
+		fileMeta := req.FileMeta
+		userFileMeta := req.UserFileMeta
 		file := model.File{}
-		if err = tx.Set("gorm:query_option", "FOR UPDATE").Where(model.File{
-			Hash: meta.Hash,
-		}).Attrs(model.File{
-			ID:            fileID,
-			Hash:          meta.Hash,
-			HashAlgorithm: meta.HashAlgorithm,
-			SamplingHash:  meta.SamplingHash,
-			Size:          meta.Size,
-			Location:      meta.Location,
-			CreateAt:      time.Unix(meta.CreateAt, 0),
-			UpdateAt:      time.Unix(meta.CreateAt, 0),
-			Status:        int(meta.Status),
-			Count:         0,
-		}).FirstOrCreate(&file).Error; err != nil {
-			// 回退
-			return err
+
+		// 检查父目录存不存在 根目录除外
+		if req.UserFileMeta.Directory != "/" {
+			parentHash := getUserFileHash(req.UserID, req.UserFileMeta.Directory, "")
+			if err = tx.Model(&model.UserFile{}).Where("hash = ?", parentHash).Find(&model.UserFile{}).Error; err != nil {
+				return err
+			}
 		}
-		file.Count += 1
-		// 更新引用计数
-		if err := tx.Save(&file).Error; err != nil {
-			return err
+
+		if !userFileMeta.IsDirectory {
+			if err = tx.Set("gorm:query_option", "FOR UPDATE").Where(model.File{
+				Hash: fileMeta.Hash,
+			}).Attrs(model.File{
+				ID:            fileID,
+				Hash:          fileMeta.Hash,
+				HashAlgorithm: fileMeta.HashAlgorithm,
+				SamplingHash:  fileMeta.SamplingHash,
+				Size:          fileMeta.Size,
+				Location:      fileMeta.Location,
+				CreateAt:      time.Unix(fileMeta.CreateAt, 0),
+				UpdateAt:      time.Unix(fileMeta.CreateAt, 0),
+				Status:        int(fileMeta.Status),
+				Count:         0,
+			}).FirstOrCreate(&file).Error; err != nil {
+				// 回退
+				return err
+			}
+			file.Count += 1
+			// 更新引用计数
+			if err := tx.Save(&file).Error; err != nil {
+				return err
+			}
+
 		}
 
 		// user_files 表
-		// 同一个目录不能重名
-		userFile := req.UserFileMeta
-		// 如果有一样的就回退
+		// 同一个目录不能重名 如果有一样的就回退
 		hash := getUserFileHash(req.UserID, req.UserFileMeta.Directory, req.UserFileMeta.FileName)
 		err = tx.Where("hash = ?", hash).First(&model.UserFile{}).Error
 		if err == gorm.ErrRecordNotFound {
@@ -118,13 +130,13 @@ func (s *Service) InsertUserFile(ctx context.Context, req *proto.InsertUserFileM
 				ID:           userFileID,
 				UserID:       req.UserID,
 				FileID:       file.ID,
-				FileName:     userFile.FileName,
-				IsDirectory:  userFile.IsDirectory,
-				Directory:    userFile.Directory,
-				UploadAt:     time.Unix(userFile.UploadAt, 0),
-				LastUpdateAt: time.Unix(userFile.LastUpdateAt, 0),
+				FileName:     userFileMeta.FileName,
+				IsDirectory:  userFileMeta.IsDirectory,
+				Directory:    userFileMeta.Directory,
+				UploadAt:     time.Unix(userFileMeta.UploadAt, 0),
+				LastUpdateAt: time.Unix(userFileMeta.LastUpdateAt, 0),
 				Hash:         hash, // 保证唯一性
-				Status:       int(userFile.Status),
+				Status:       int(userFileMeta.Status),
 			}).Error; err != nil {
 				// 并发冲突
 				return errConflict
@@ -152,49 +164,46 @@ func (s *Service) InsertUserFile(ctx context.Context, req *proto.InsertUserFileM
 	return nil
 }
 
-// 删除 user_files 表中的一条记录
+// 删除 user_files 表中的记录
 //
-// 删除 user_files 中的一条记录如果没有 返回 not found 错误
-// 更新 files 表中的引用计数
+// 如果是目录除了删除自己，还删除以他为前缀
 func (s *Service) DeleteUserFile(ctx context.Context, req *proto.DeleteUserFileReq, res *proto.DeleteUserFileResp) error {
 
 	var (
-		err          error
-		affectedRows int64
+		err error
 	)
 
 	userFileMeta := &model.UserFile{}
-	logger.Infof("DeleteUserFile userID=%v directory=%v filename:%v", req.UserID, req.Directory, req.FileName)
+	logger.Infof("DeleteUserFile user_id=%v directory=%v filename:%v", req.UserID, req.Directory, req.FileName)
 	err = db.Transaction(func(tx *gorm.DB) error {
 		var (
 			err error
 		)
-
-		if err = tx.Set("gorm:query_option", "FOR UPDATE").Where("user_id = ? AND directory = ? AND file_name = ?", req.UserID, req.Directory, req.FileName).First(&userFileMeta).Error; err != nil {
+		hash := getUserFileHash(req.UserID, req.Directory, req.FileName)
+		if err = tx.Where("hash = ?", hash).First(userFileMeta).Error; err != nil {
+			return err
+		}
+		if userFileMeta.IsDirectory {
+			if err = tx.Debug().Where("user_id = ? and directory LIKE ?", userFileMeta.UserID, filepath.Join(userFileMeta.Directory, userFileMeta.FileName)+"%").Delete(&UserFile{}).Error; err != nil {
+				return err
+			}
+		}
+		// 删除自己 触发删除钩子
+		if err = tx.Delete(&userFileMeta).Error; err != nil {
 			return err
 		}
 
-		affectedRows = db.Delete(userFileMeta).RowsAffected
-
-		file := model.File{}
-		if err = tx.Set("gorm:query_option", "FOR UPDATE").Where("id = ?", userFileMeta.FileID).First(&file).Error; err != nil {
-			return err
-		}
-		// file 引用计数 - 1
-		file.Count -= 1
-		err = tx.Save(&file).Error
-		// 成功删除
-		return err
+		return nil
 
 	})
 
-	if err != nil {
+	if err != nil && err != gorm.ErrRecordNotFound {
 		logger.Errorf("DeleteUserFile failed, for the reason:%v", err)
 		return err
 	}
 
-	if affectedRows == 0 {
-		res.Err = getProtoError(gorm.ErrRecordNotFound, common.DBNotFoundCode)
+	if err == gorm.ErrRecordNotFound {
+		res.Err = getProtoError(err, common.DBNotFoundCode)
 		return nil
 	}
 
