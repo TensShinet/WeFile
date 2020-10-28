@@ -112,6 +112,7 @@
           {
             "type": "string",
             "x-go-name": "Cookie",
+            "description": "存储 session id",
             "name": "cookie",
             "in": "header",
             "required": true
@@ -119,6 +120,7 @@
           {
             "type": "string",
             "x-go-name": "Directory",
+            "description": "目录\n比如 / /dir /dir1/dir2 注意一定要有 /",
             "name": "directory",
             "in": "query",
             "required": true
@@ -127,6 +129,94 @@
         "responses": {
           "200": {
             "$ref": "#/responses/FileListResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/responses/NotFoundError"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      },
+      "post": {
+        "description": "创建一个新目录",
+        "tags": [
+          "User"
+        ],
+        "summary": "CreateDirectory",
+        "operationId": "CreateDirectory",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Cookie",
+            "name": "cookie",
+            "in": "header",
+            "required": true
+          },
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "name",
+                "directory",
+                "csrf_token"
+              ],
+              "properties": {
+                "csrf_token": {
+                  "description": "csrf_token\n登录的时候才会更新",
+                  "type": "string",
+                  "x-go-name": "CSRFToken"
+                },
+                "directory": {
+                  "description": "目录\n比如 / /dir /dir1/dir2 注意一定要有 /",
+                  "type": "string",
+                  "x-go-name": "Directory"
+                },
+                "name": {
+                  "description": "在 Directory 下的文件名/目录名",
+                  "type": "string",
+                  "x-go-name": "Name"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/CreateDirectoryResponse"
+          },
+          "400": {
+            "$ref": "#/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "409": {
+            "$ref": "#/responses/ConflictError"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      },
+      "delete": {
+        "description": "删除用户目录下的文件/目录",
+        "tags": [
+          "User"
+        ],
+        "summary": "DeleteUserFile",
+        "operationId": "DeleteUserFile",
+        "responses": {
+          "200": {
+            "$ref": "#/responses/DeleteUserFileResponse"
+          },
+          "400": {
+            "$ref": "#/responses/BadRequestResponse"
           },
           "401": {
             "$ref": "#/responses/UnauthorizedResponse"
@@ -472,7 +562,7 @@
           {
             "type": "string",
             "x-go-name": "Directory",
-            "description": "目录\n比如 / /dir /dir1/dir2",
+            "description": "目录\n比如 / /dir /dir1/dir2 注意一定要有 /",
             "name": "directory",
             "in": "query",
             "required": true
@@ -792,6 +882,58 @@
       "headers": {
         "message": {
           "type": "string"
+        }
+      }
+    },
+    "CreateDirectoryResponse": {
+      "description": "CreateDirectoryResponse 一些属性没用",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "file_id": {
+            "description": "文件 id 用于下载",
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "FileID"
+          },
+          "file_name": {
+            "description": "文件名",
+            "type": "string",
+            "x-go-name": "FileName"
+          },
+          "file_size": {
+            "description": "文件大小 单位 Byte",
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "FileSize"
+          },
+          "is_directory": {
+            "description": "是否是目录",
+            "type": "boolean",
+            "x-go-name": "IsDirectory"
+          },
+          "upload_at": {
+            "description": "上传时间",
+            "type": "string",
+            "format": "date-time",
+            "x-go-name": "UploadAt"
+          }
+        }
+      }
+    },
+    "DeleteUserFileResponse": {
+      "description": "删除的信息",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "file_info": {
+            "$ref": "#/definitions/File"
+          }
+        }
+      },
+      "headers": {
+        "Body": {
+          "description": "in: Body"
         }
       }
     },
