@@ -5,6 +5,7 @@ import (
 	"github.com/TensShinet/WeFile/service/base/conf"
 	"github.com/TensShinet/WeFile/service/common"
 	db "github.com/TensShinet/WeFile/service/db/proto"
+	"github.com/TensShinet/WeFile/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
@@ -27,15 +28,15 @@ type File struct {
 
 // swagger:parameters GetUserFileList
 type GetUserFileListParam struct {
-	// in: header
 	// 存储 session id
+	// in: header
 	// Required: true
 	Cookie string `json:"cookie"`
 
-	// in: query
 	// 目录
+	// 比如 / /dir /dir1/dir2 注意一定要有 /
 	// Required: true
-	// 比如 / /dir /dir1/dir2
+	// in: query
 	Directory string `json:"directory"`
 }
 
@@ -129,7 +130,7 @@ type GetUploadAddressParam struct {
 	// in: query
 	FileName string `json:"file_name"`
 	// 目录
-	// 比如 / /dir /dir1/dir2
+	// 比如 / /dir /dir1/dir2 注意一定要有 /
 	// Required: true
 	Directory string `json:"directory"`
 }
@@ -194,7 +195,7 @@ type GetDownloadAddressParam struct {
 	FileName string `json:"file_name"`
 	// in: query
 	// 目录
-	// 比如 / /dir /dir1/dir2
+	// 比如 / /dir /dir1/dir2 注意一定要有 /
 	// Required: true
 	Directory string `json:"directory"`
 }
@@ -267,4 +268,166 @@ func GetDownloadAddress(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"address": config.BaseAPI.FileAPIAddress,
 	})
+}
+
+type DeleteUserFileParam struct {
+	// in: header
+	// Required: true
+	Cookie string `json:"cookie"`
+
+	// 在 Directory 下的文件名/目录名
+	// in: query
+	// Required: true
+	Name string `json:"name"`
+	// 目录
+	// 比如 / /dir /dir1/dir2 注意一定要有 /
+	// in: query
+	// Required: true
+	Directory string `json:"directory"`
+	// csrf_token
+	// 登录的时候才会更新
+	// in: query
+	// Required: true
+	CSRFToken string `json:"csrf_token"`
+}
+
+// 删除的信息
+// swagger:response DeleteUserFileResponse
+type DeleteUserFileResponse struct {
+	// in: Body
+	Body struct {
+		FileInfo File `json:"file_info"`
+	}
+}
+
+// swagger:route DELETE /file_list/{user_id} User DeleteUserFile
+//
+// DeleteUserFile
+//
+// 删除用户目录下的文件/目录
+//     Responses:
+//       200: DeleteUserFileResponse
+//		 400: BadRequestResponse
+//  	 401: UnauthorizedResponse
+//		 404: NotFoundError
+//       500: ErrorResponse
+func DeleteUserFile(c *gin.Context) {
+	var (
+		res    *db.DeleteUserFileResp
+		err    error
+		userID int64
+	)
+	if userID, err = strconv.ParseInt(c.Param("user_id"), 10, 64); err != nil {
+		common.SetSimpleResponse(c, http.StatusBadRequest, "invalid id")
+	}
+
+	name := c.Query("name")
+	directory := c.Query("directory")
+	logger.Infof("DeleteUserFile user_id:%v directory:%v name:%v", userID, directory, name)
+
+	if res, err = dbService.DeleteUserFile(c, &db.DeleteUserFileReq{
+		UserID:    userID,
+		Directory: directory,
+		FileName:  name,
+	}); err != nil {
+		common.SetSimpleResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if res.Err != nil && res.Err.Code == common.DBNotFoundCode {
+		common.SetSimpleResponse(c, http.StatusNotFound, "not found")
+		return
+	}
+
+	c.JSON(http.StatusOK, File{
+		FileID:      res.FileMeta.FileID,
+		FileName:    res.FileMeta.FileName,
+		UploadAt:    time.Unix(res.FileMeta.UploadAt, 0),
+		IsDirectory: res.FileMeta.IsDirectory,
+		FileSize:    res.FileMeta.Size,
+	})
+}
+
+// swagger:parameters CreateDirectory
+type CreateDirectoryParam struct {
+	// in: header
+	// Required: true
+	Cookie string `json:"cookie"`
+
+	// in: body
+	Body struct {
+		// 在 Directory 下的文件名/目录名
+		// Required: true
+		Name string `json:"name"`
+		// 目录
+		// 比如 / /dir /dir1/dir2 注意一定要有 /
+		// Required: true
+		Directory string `json:"directory"`
+		// csrf_token
+		// 登录的时候才会更新
+		// Required: true
+		CSRFToken string `json:"csrf_token"`
+	}
+}
+
+// CreateDirectoryResponse 一些属性没用
+//swagger:response CreateDirectoryResponse
+type CreateDirectoryResponse struct {
+	// in: body
+	Body struct {
+		File `json:"directory_info"`
+	}
+}
+
+// swagger:route POST /file_list/{user_id} User CreateDirectory
+//
+// CreateDirectory
+//
+// 创建一个新目录
+//     Responses:
+//       200: CreateDirectoryResponse
+//		 400: BadRequestResponse
+//  	 401: UnauthorizedResponse
+//		 409: ConflictError
+//       500: ErrorResponse
+func CreateDirectory(c *gin.Context) {
+	var (
+		err    error
+		res    *db.InsertUserFileMetaResp
+		userID int64
+	)
+	if userID, err = utils.ParseInt64(c.Param("user_id")); err != nil {
+		common.SetSimpleResponse(c, http.StatusBadRequest, "invalid user id")
+		return
+	}
+
+	name := c.Request.FormValue("name")
+	directory := c.Request.FormValue("directory")
+	t := time.Now()
+	if res, err = dbService.InsertUserFile(c, &db.InsertUserFileMetaReq{
+		UserFileMeta: &db.UserFileMeta{
+			FileName:     name,
+			IsDirectory:  true,
+			UploadAt:     t.Unix(),
+			Directory:    directory,
+			LastUpdateAt: t.Unix(),
+			Status:       0,
+		},
+		UserID: userID,
+	}); err != nil {
+		common.SetSimpleResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if res.Err != nil && res.Err.Code == common.DBConflictCode {
+		common.SetSimpleResponse(c, http.StatusConflict, common.ErrConflict.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, File{
+		FileName:    res.FileMeta.FileName,
+		UploadAt:    time.Unix(res.FileMeta.UploadAt, 0),
+		IsDirectory: true,
+	})
+
 }

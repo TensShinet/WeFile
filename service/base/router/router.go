@@ -42,6 +42,8 @@ func Init() {
 	// 用户认证
 	v1.Use(handler.Authorize())
 	v1.GET("/file_list/:user_id", handler.GetUserFileList)
+	v1.DELETE("/file_list/:user_id", handler.DeleteUserFile)
+	v1.POST("/file_list/:user_id", handler.CreateDirectory)
 	v1.GET("/download_address/:user_id", handler.GetDownloadAddress)
 	v1.GET("/upload_address/:user_id", handler.GetUploadAddress)
 

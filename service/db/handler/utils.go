@@ -6,6 +6,7 @@ import (
 	dbProto "github.com/TensShinet/WeFile/service/db/proto"
 	idgProto "github.com/TensShinet/WeFile/service/id_generator/proto"
 	"github.com/TensShinet/WeFile/utils"
+	"path/filepath"
 	"strconv"
 )
 
@@ -25,6 +26,6 @@ func getProtoError(err error, code int) *dbProto.Error {
 }
 
 func getUserFileHash(id int64, directory, filename string) string {
-	s := strconv.FormatInt(id, 16) + directory + filename
+	s := strconv.FormatInt(id, 16) + filepath.Join(directory, filename)
 	return utils.Digest256([]byte(s))
 }

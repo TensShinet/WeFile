@@ -71,6 +71,9 @@ func Upload(c *gin.Context) {
 		return
 	}
 
+	// 删除暂存文件
+	defer tempFile.Remove()
+
 	if _, err := io.Copy(tempFile, file); err != nil {
 		logger.Errorf("Upload io.Copy err:%v", err.Error())
 		common.SetSimpleResponse(c, http.StatusInternalServerError, err.Error())
@@ -87,9 +90,6 @@ func Upload(c *gin.Context) {
 		common.SetSimpleResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
-
-	// 删除暂存文件
-	_ = tempFile.Remove()
 
 	logger.Infof("Upload filename:%v Hash:%v location:%v", head.Filename, tempFile.TotalHash(), savedFile.Location())
 	// 插入数据库

@@ -140,14 +140,10 @@ func (s *LocalStore) SaveFile(file File) (File, error) {
 		osFile *os.File
 	)
 	path = filepath.Join(s.root, file.TotalHash(), file.TotalHash())
-	if osFile, err = utils.CreateFile(path); err != nil {
-		if err != syscall.EEXIST {
-			return nil, err
-		} else {
-			// 已经保存的 file 不需要再写
-			osFile = nil
-		}
 
+	// 原子创建文件如果出错，则文件存在
+	if osFile, err = utils.CreateFile(path); err != nil {
+		osFile = nil
 	}
 	buf := make([]byte, s.samplingChunkSize)
 	hashing := sha256.New()
