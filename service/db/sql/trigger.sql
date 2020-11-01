@@ -12,6 +12,7 @@ BEGIN
         SELECT count
         INTO @file_count
         FROM files
+        WHERE id = @file_id
         FOR UPDATE;
 
         SET @file_count = @file_count - 1;
