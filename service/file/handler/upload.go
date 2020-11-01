@@ -80,6 +80,13 @@ func Upload(c *gin.Context) {
 		return
 	}
 
+	// seek file
+	if _, err := tempFile.Seek(0, 0); err != nil {
+		logger.Errorf("tempFile.Seek err:%v", err.Error())
+		common.SetSimpleResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
 	if head.Filename != fileMeta.FileName {
 		common.SetSimpleResponse(c, http.StatusBadRequest, "invalid filename")
 		return

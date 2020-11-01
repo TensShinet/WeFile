@@ -26,7 +26,7 @@ func Init() {
 		return
 	}
 	store.Options(sessions.Options{
-		MaxAge: config.BaseAPI.SessionMaxAge * 60,
+		MaxAge: config.BaseAPI.SessionMaxAge * 60 * 60,
 	})
 
 	router.Use(sessions.Sessions(config.BaseAPI.SessionName, store))
