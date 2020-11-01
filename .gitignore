@@ -21,3 +21,10 @@ db_conf.yml
 auth_conf.yml
 base_conf.yml
 file_conf.yml
+
+# binary
+auth_service
+base_service
+idg_service
+db_service
+file_service
