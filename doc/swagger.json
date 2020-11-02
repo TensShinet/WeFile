@@ -211,6 +211,39 @@
         ],
         "summary": "DeleteUserFile",
         "operationId": "DeleteUserFile",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Cookie",
+            "name": "cookie",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "Name",
+            "description": "在 Directory 下的文件名/目录名",
+            "name": "name",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "Directory",
+            "description": "目录\n比如 / /dir /dir1/dir2 注意一定要有 /",
+            "name": "directory",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "CSRFToken",
+            "description": "csrf_token\n登录的时候才会更新",
+            "name": "csrf_token",
+            "in": "query",
+            "required": true
+          }
+        ],
         "responses": {
           "200": {
             "$ref": "#/responses/DeleteUserFileResponse"
@@ -929,11 +962,6 @@
           "file_info": {
             "$ref": "#/definitions/File"
           }
-        }
-      },
-      "headers": {
-        "Body": {
-          "description": "in: Body"
         }
       }
     },

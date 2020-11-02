@@ -270,6 +270,7 @@ func GetDownloadAddress(c *gin.Context) {
 	})
 }
 
+// swagger:parameters DeleteUserFile
 type DeleteUserFileParam struct {
 	// in: header
 	// Required: true
@@ -294,7 +295,7 @@ type DeleteUserFileParam struct {
 // 删除的信息
 // swagger:response DeleteUserFileResponse
 type DeleteUserFileResponse struct {
-	// in: Body
+	// in: body
 	Body struct {
 		FileInfo File `json:"file_info"`
 	}
@@ -405,7 +406,7 @@ func CreateDirectory(c *gin.Context) {
 	directory := c.Request.FormValue("directory")
 	t := time.Now()
 	if res, err = dbService.InsertUserFile(c, &db.InsertUserFileMetaReq{
-		UserFileMeta: &db.UserFileMeta{
+		UserFileMeta: &db.ListFileMeta{
 			FileName:     name,
 			IsDirectory:  true,
 			UploadAt:     t.Unix(),
