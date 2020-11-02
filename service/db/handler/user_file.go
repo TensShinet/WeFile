@@ -150,7 +150,9 @@ func (s *Service) InsertUserFile(ctx context.Context, req *proto.InsertUserFileM
 		// 成功插入
 		res.FileMeta = req.UserFileMeta
 		res.FileMeta.FileID = file.ID
-		res.FileMeta.Size = fileMeta.Size
+		if !userFileMeta.IsDirectory {
+			res.FileMeta.Size = fileMeta.Size
+		}
 		return nil
 	})
 
