@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"fmt"
 	"github.com/TensShinet/WeFile/service/common"
 	"github.com/TensShinet/WeFile/service/db/model"
 	"github.com/TensShinet/WeFile/service/db/proto"
@@ -35,9 +34,9 @@ func (s *Service) ListUserFile(ctx context.Context, req *proto.ListUserFileMetaR
 		return err
 	}
 
-	res.UserFileMetaList = make([]*proto.UserFileMeta, len(files))
+	res.UserFileMetaList = make([]*proto.ListFileMeta, len(files))
 	for i, f := range files {
-		res.UserFileMetaList[i] = &proto.UserFileMeta{
+		res.UserFileMetaList[i] = &proto.ListFileMeta{
 			FileID:       f.FileID,
 			FileName:     f.FileName,
 			IsDirectory:  f.IsDirectory,
@@ -53,14 +52,12 @@ func (s *Service) ListUserFile(ctx context.Context, req *proto.ListUserFileMetaR
 	return
 }
 
-var errConflict = fmt.Errorf("confilct error")
-
 // 向 user_files 表中插入一条数据
 //
 // 得到预插入的 id
 // 如果不是目录 向 files 表中创建或获取一条数据
 // 如果不是目录 更新 file 引用计数
-// 向 user_files 表中插入一条数据 如果冲突 返回 errConflict 事务回退
+// 向 user_files 表中插入一条数据 如果冲突 返回 ErrConflict 事务回退
 func (s *Service) InsertUserFile(ctx context.Context, req *proto.InsertUserFileMetaReq, res *proto.InsertUserFileMetaResp) error {
 
 	var (
@@ -90,7 +87,10 @@ func (s *Service) InsertUserFile(ctx context.Context, req *proto.InsertUserFileM
 		// 检查父目录存不存在 根目录除外
 		if req.UserFileMeta.Directory != "/" {
 			parentHash := getUserFileHash(req.UserID, req.UserFileMeta.Directory, "")
-			if err = tx.Model(&model.UserFile{}).Where("hash = ?", parentHash).Find(&model.UserFile{}).Error; err != nil {
+			if err = tx.Where("hash = ?", parentHash).First(&model.UserFile{}).Error; err != nil {
+				if err == gorm.ErrRecordNotFound {
+					return common.ErrParentDirNotFound
+				}
 				return err
 			}
 		}
@@ -139,13 +139,13 @@ func (s *Service) InsertUserFile(ctx context.Context, req *proto.InsertUserFileM
 				Status:       int(userFileMeta.Status),
 			}).Error; err != nil {
 				// 并发冲突
-				return errConflict
+				return common.ErrConflict
 			}
 		} else if err != nil {
 			return err
 		} else {
 			// 找到相同的文件
-			return errConflict
+			return common.ErrConflict
 		}
 		// 成功插入
 		res.FileMeta = req.UserFileMeta
@@ -158,8 +158,11 @@ func (s *Service) InsertUserFile(ctx context.Context, req *proto.InsertUserFileM
 
 	if err != nil {
 		logger.Errorf("InsertUserFile failed, for the reason:%v", err)
-		if err == errConflict {
+		if err == common.ErrConflict {
 			res.Err = getProtoError(err, common.DBConflictCode)
+			return nil
+		} else if err == common.ErrParentDirNotFound {
+			res.Err = getProtoError(err, common.DBNotFoundCode)
 			return nil
 		}
 		return err
@@ -211,7 +214,7 @@ func (s *Service) DeleteUserFile(ctx context.Context, req *proto.DeleteUserFileR
 	}
 
 	// 删除成功
-	res.FileMeta = &proto.UserFileMeta{
+	res.FileMeta = &proto.ListFileMeta{
 		FileID:       userFileMeta.FileID,
 		FileName:     userFileMeta.FileName,
 		IsDirectory:  userFileMeta.IsDirectory,
@@ -230,7 +233,7 @@ func (s *Service) QueryUserFile(ctx context.Context, req *proto.QueryUserFileReq
 	)
 	userFile := model.UserFile{}
 	logger.Infof("QueryUserFile userID=%v directory=%v filename:%v", req.UserID, req.Directory, req.FileName)
-	err = db.Where("user_id=? AND directory = ? AND file_name = ?", req.UserID, req.Directory, req.FileName).First(&userFile).Error
+	err = db.Where("hash = ?", getUserFileHash(req.UserID, req.Directory, req.FileName)).First(&userFile).Error
 
 	if err == gorm.ErrRecordNotFound {
 		res.Err = getProtoError(err, common.DBNotFoundCode)
@@ -240,7 +243,7 @@ func (s *Service) QueryUserFile(ctx context.Context, req *proto.QueryUserFileReq
 		return err
 	}
 
-	res.FileMeta = &proto.UserFileMeta{
+	res.FileMeta = &proto.ListFileMeta{
 		FileID:       userFile.FileID,
 		FileName:     userFile.FileName,
 		IsDirectory:  userFile.IsDirectory,

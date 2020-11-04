@@ -29,3 +29,7 @@ func getUserFileHash(id int64, directory, filename string) string {
 	s := strconv.FormatInt(id, 16) + filepath.Join(directory, filename)
 	return utils.Digest256([]byte(s))
 }
+
+func getGroupFileHash(id int64, directory, filename string) string {
+	return getUserFileHash(id, directory, filename)
+}
