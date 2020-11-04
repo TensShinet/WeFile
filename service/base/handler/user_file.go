@@ -5,7 +5,6 @@ import (
 	"github.com/TensShinet/WeFile/service/base/conf"
 	"github.com/TensShinet/WeFile/service/common"
 	db "github.com/TensShinet/WeFile/service/db/proto"
-	"github.com/TensShinet/WeFile/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
@@ -26,12 +25,17 @@ type File struct {
 	FileSize int64 `json:"file_size"`
 }
 
-// swagger:parameters GetUserFileList
-type GetUserFileListParam struct {
+// swagger:parameters GetUserFileList GetGroupFileList
+type GetFileListParam struct {
 	// 存储 session id
 	// in: header
 	// Required: true
 	Cookie string `json:"cookie"`
+
+	// 组 id 只有在使用 组的时候才使用
+	//
+	// in: query
+	GroupID int64 `json:"group_id"`
 
 	// 目录
 	// 比如 / /dir /dir1/dir2 注意一定要有 /
@@ -61,7 +65,7 @@ type AddressResponse struct {
 	}
 }
 
-// swagger:route GET /file_list/{user_id} User GetUserFileList
+// swagger:route GET /user/file_list User GetUserFileList
 //
 // GetUserFileList
 //
@@ -77,7 +81,8 @@ func GetUserFileList(c *gin.Context) {
 		err error
 	)
 	// TODO:检查
-	id, _ := strconv.ParseInt(c.Param("user_id"), 10, 64)
+	user := getUser(c)
+	id := user.UserID
 	directory := c.Query("directory")
 	logger.Infof("GetUserFileList user_id:%v directory:%v", id, directory)
 	if directory == "" {
@@ -120,11 +125,15 @@ func GetUserFileList(c *gin.Context) {
 	})
 }
 
-// swagger:parameters GetUploadAddress
+// swagger:parameters GetUploadAddress GetGroupUploadAddress
 type GetUploadAddressParam struct {
 	// in: header
 	// Required: true
 	Cookie string `json:"cookie"`
+	// 只有在 group 的时候才使用
+	//
+	// in: query
+	GroupID int64 `json:"group_id"`
 	// 文件名
 	// Required: true
 	// in: query
@@ -135,7 +144,7 @@ type GetUploadAddressParam struct {
 	Directory string `json:"directory"`
 }
 
-// swagger:route GET /upload_address/{user_id} User GetUploadAddress
+// swagger:route GET /user/upload_address User GetUploadAddress
 //
 // GetUploadAddress
 //
@@ -153,7 +162,8 @@ func GetUploadAddress(c *gin.Context) {
 	)
 
 	// TODO: 检查
-	id, _ := strconv.ParseInt(c.Param("user_id"), 10, 64)
+	user := getUser(c)
+	id := user.UserID
 	directory := c.Query("directory")
 	fileName := c.Query("file_name")
 	logger.Infof("GetUploadAddress id:%v directory:%v fileName:%v", id, directory, fileName)
@@ -180,11 +190,15 @@ func GetUploadAddress(c *gin.Context) {
 	})
 }
 
-// swagger:parameters GetDownloadAddress
+// swagger:parameters GetDownloadAddress GetGroupDownloadAddress
 type GetDownloadAddressParam struct {
 	// in: header
 	// Required: true
 	Cookie string `json:"cookie"`
+	// 只有在 group 的时候才使用
+	//
+	// in: query
+	GroupID int64 `json:"group_id"`
 	// in: query
 	// 文件 ID
 	// Required: true
@@ -200,7 +214,7 @@ type GetDownloadAddressParam struct {
 	Directory string `json:"directory"`
 }
 
-// swagger:route GET /download_address/{user_id} User GetDownloadAddress
+// swagger:route GET /user/download_address User GetDownloadAddress
 //
 // GetDownloadAddress
 //
@@ -214,7 +228,6 @@ func GetDownloadAddress(c *gin.Context) {
 	var (
 		err    error
 		fileID int64
-		userID int64
 		res    *auth.EncodeResp
 		res1   *db.QueryUserFileResp
 	)
@@ -224,8 +237,10 @@ func GetDownloadAddress(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, common.BadRequestResponse{Message: "file id 无效"})
 		return
 	}
+
+	user := getUser(c)
+	userID := user.UserID
 	fileName := c.Request.FormValue("file_name")
-	userID, _ = strconv.ParseInt(c.Param("user_id"), 10, 64)
 	directory := c.Query("directory")
 
 	if directory == "" || fileName == "" {
@@ -293,35 +308,33 @@ type DeleteUserFileParam struct {
 }
 
 // 删除的信息
-// swagger:response DeleteUserFileResponse
-type DeleteUserFileResponse struct {
+// swagger:response DeleteFileResponse
+type DeleteFileResponse struct {
 	// in: body
 	Body struct {
 		FileInfo File `json:"file_info"`
 	}
 }
 
-// swagger:route DELETE /file_list/{user_id} User DeleteUserFile
+// swagger:route DELETE /user/file_list User DeleteUserFile
 //
 // DeleteUserFile
 //
 // 删除用户目录下的文件/目录
 //     Responses:
-//       200: DeleteUserFileResponse
+//       200: DeleteFileResponse
 //		 400: BadRequestResponse
 //  	 401: UnauthorizedResponse
 //		 404: NotFoundError
 //       500: ErrorResponse
 func DeleteUserFile(c *gin.Context) {
 	var (
-		res    *db.DeleteUserFileResp
-		err    error
-		userID int64
+		res *db.DeleteUserFileResp
+		err error
 	)
-	if userID, err = strconv.ParseInt(c.Param("user_id"), 10, 64); err != nil {
-		common.SetSimpleResponse(c, http.StatusBadRequest, "invalid id")
-	}
 
+	user := getUser(c)
+	userID := user.UserID
 	name := c.Query("name")
 	directory := c.Query("directory")
 	logger.Infof("DeleteUserFile user_id:%v directory:%v name:%v", userID, directory, name)
@@ -380,7 +393,7 @@ type CreateDirectoryResponse struct {
 	}
 }
 
-// swagger:route POST /file_list/{user_id} User CreateDirectory
+// swagger:route POST /user/file_list User CreateDirectory
 //
 // CreateDirectory
 //
@@ -393,17 +406,17 @@ type CreateDirectoryResponse struct {
 //       500: ErrorResponse
 func CreateDirectory(c *gin.Context) {
 	var (
-		err    error
-		res    *db.InsertUserFileMetaResp
-		userID int64
+		err error
+		res *db.InsertUserFileMetaResp
 	)
-	if userID, err = utils.ParseInt64(c.Param("user_id")); err != nil {
-		common.SetSimpleResponse(c, http.StatusBadRequest, "invalid user id")
-		return
-	}
 
+	user := getUser(c)
+	userID := user.UserID
 	name := c.Request.FormValue("name")
 	directory := c.Request.FormValue("directory")
+
+	logger.Infof("CreateDirectory user_id:%v directory:%v name:%v", userID, directory, name)
+
 	t := time.Now()
 	if res, err = dbService.InsertUserFile(c, &db.InsertUserFileMetaReq{
 		UserFileMeta: &db.ListFileMeta{
