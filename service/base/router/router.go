@@ -41,11 +41,30 @@ func Init() {
 
 	// 用户认证
 	v1.Use(handler.Authorize())
-	v1.GET("/file_list/:user_id", handler.GetUserFileList)
-	v1.DELETE("/file_list/:user_id", handler.DeleteUserFile)
-	v1.POST("/file_list/:user_id", handler.CreateDirectory)
-	v1.GET("/download_address/:user_id", handler.GetDownloadAddress)
-	v1.GET("/upload_address/:user_id", handler.GetUploadAddress)
+	v1.GET("/user/file_list", handler.GetUserFileList)
+	v1.DELETE("/user/file_list", handler.DeleteUserFile)
+	v1.POST("/user/file_list", handler.CreateDirectory)
+	v1.GET("/user/download_address", handler.GetDownloadAddress)
+	v1.GET("/user/upload_address", handler.GetUploadAddress)
+
+	// user group 相关
+	// 创建 group
+	v1.POST("/user/group", handler.CreateGroup)
+	v1.DELETE("/user/group", handler.DeleteGroup)
+	v1.GET("/user/group", handler.GetGroup)
+	v1.GET("/user/group/member_list", handler.GetGroupMemberList)
+
+	// 获取所有 group
+	v1.GET("/user/group_list", handler.GetGroupList)
+	v1.POST("/user/group_list", handler.JoinGroup)
+	v1.DELETE("/user/group_list", handler.LeaveGroup)
+
+	// group file 相关
+	v1.DELETE("/user/group/file_list", handler.DeleteGroupFile)
+	v1.POST("/user/group/file_list", handler.CreateGroupDirectory)
+	v1.GET("/user/group/file_list", handler.GetGroupFileList)
+	v1.GET("/user/group/download_address", handler.GetGroupDownloadAddress)
+	v1.GET("/user/group/upload_address", handler.GetGroupUploadAddress)
 
 	if err := router.Run(config.BaseAPI.Address); err != nil {
 		logger.Panicf("router run failed, for the reason:%v", err)

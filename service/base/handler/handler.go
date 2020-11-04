@@ -23,7 +23,7 @@ type UserSessionInfo struct {
 }
 
 const (
-	defaultSessionKey = "user"
+	defaultUserKey = "user"
 )
 
 func Init() {

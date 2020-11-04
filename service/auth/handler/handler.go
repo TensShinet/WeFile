@@ -77,6 +77,7 @@ type uploadJWTClaims struct {
 	FileName  string `json:"file_name"`
 	Directory string `json:"directory"`
 	UserID    int64  `json:"user_id"`
+	GroupID   int64  `json:"group_id"`
 }
 
 func (s *Service) UploadJWTEncode(_ context.Context, fileMeta *proto.UploadFileMeta, res *proto.EncodeResp) error {
@@ -88,6 +89,7 @@ func (s *Service) UploadJWTEncode(_ context.Context, fileMeta *proto.UploadFileM
 		fileMeta.FileName,
 		fileMeta.Directory,
 		fileMeta.UserID,
+		fileMeta.GroupID,
 	}
 	raw := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	token, err := raw.SignedString([]byte(config.JWT.Secret))
@@ -120,11 +122,13 @@ func (s *Service) UploadJWTDecode(_ context.Context, req *proto.DecodeReq, res *
 	userID, _ := claims["user_id"].(float64)
 	fileName, _ := claims["file_name"].(string)
 	directory, _ := claims["directory"].(string)
+	groupID, _ := claims["group_id"].(float64)
 
 	res.FileMeta = &proto.UploadFileMeta{
 		FileName:  fileName,
 		UserID:    int64(userID),
 		Directory: directory,
+		GroupID:   int64(groupID),
 	}
 
 	return nil

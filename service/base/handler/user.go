@@ -148,7 +148,7 @@ func SignUp(c *gin.Context) {
 
 	// 注册成功
 	csrfToken := getCSRFToken()
-	if err := setSession(c, res1.Id, defaultSessionKey, csrfToken); err != nil {
+	if err := setSession(c, res1.Id, defaultUserKey, csrfToken); err != nil {
 		c.JSON(http.StatusInternalServerError, common.ErrorResponse{Message: err.Error()})
 		return
 	}
@@ -206,7 +206,7 @@ func SignIn(c *gin.Context) {
 
 	// 登录成功
 	csrfToken := getCSRFToken()
-	if err := setSession(c, res1.User.Id, defaultSessionKey, csrfToken); err != nil {
+	if err := setSession(c, res1.User.Id, defaultUserKey, csrfToken); err != nil {
 		c.JSON(http.StatusInternalServerError, common.ErrorResponse{Message: err.Error()})
 		return
 	}

@@ -8,6 +8,13 @@ service Service {
   rpc QueryUser(QueryUserReq) returns (QueryUserResp) {}
   rpc DeleteUser(DeleteUserReq) returns (DeleteUserResp) {}
 
+  // group 相关服务
+  rpc CreateGroup(CreateGroupReq) returns (CreateGroupResp) {}
+  rpc DeleteGroup(UserIDGroupID) returns (GroupResp) {}
+  rpc JoinGroup(UserIDGroupID) returns (GroupResp) {}
+  rpc LeaveGroup(UserIDGroupID) returns (GroupResp) {}
+  rpc QueryGroup(UserIDGroupID) returns (GroupResp) {}
+
   // file 相关服务
   rpc InsertFileMeta(InsertFileMetaReq) returns (InsertFileMetaResp) {}
   rpc QueryFileMeta(QueryFileMetaReq) returns (QueryFileMetaResp) {}
@@ -17,6 +24,17 @@ service Service {
   rpc InsertUserFile(InsertUserFileMetaReq) returns (InsertUserFileMetaResp) {}
   rpc DeleteUserFile(DeleteUserFileReq) returns (DeleteUserFileResp) {}
   rpc QueryUserFile(QueryUserFileReq) returns (QueryUserFileResp) {}
+
+  // group_file 相关服务
+  rpc ListGroupFile(ListGroupFileReq) returns (ListGroupFileResp) {}
+  rpc InsertGroupFile(InsertGroupFileReq) returns (InsertGroupFileResp) {}
+  rpc DeleteGroupFile(DeleteGroupFileReq) returns (DeleteGroupFileResp) {}
+  rpc QueryGroupFile(QueryGroupFileReq) returns (QueryGroupFileResp) {}
+
+  // group_user 相关服务
+  rpc ListGroupUser(UserIDGroupID) returns (ListGroupUserResp) {}
+  rpc ListUserGroup(UserIDGroupID) returns (ListUserGroupResp) {}
+  rpc CheckUserInGroup(UserIDGroupID) returns (CheckUserInGroupResp) {}
 
   // session 相关服务
   rpc InsertSession(InsertSessionReq) returns (InsertSessionResp) {}
@@ -109,7 +127,7 @@ message QueryFileMetaResp {
 
 // user file 相关
 
-message UserFileMeta {
+message ListFileMeta {
   int64 fileID = 1;           // 文件 id 插入时不填
   string fileName = 2;        // 文件名
   bool isDirectory = 3;       // 是否是目录
@@ -127,7 +145,7 @@ message DeleteUserFileReq {
 }
 
 message DeleteUserFileResp {
-  UserFileMeta fileMeta = 1;
+  ListFileMeta fileMeta = 1;
   Error err = 2;
 }
 
@@ -138,7 +156,7 @@ message QueryUserFileReq {
 }
 
 message QueryUserFileResp {
-  UserFileMeta fileMeta = 1;
+  ListFileMeta fileMeta = 1;
   Error err = 2;
 }
 
@@ -148,18 +166,18 @@ message ListUserFileMetaReq {
 }
 
 message ListUserFileMetaResp{
-  repeated UserFileMeta userFileMetaList = 1; // 用户文件元信息
+  repeated ListFileMeta userFileMetaList = 1; // 用户文件元信息
   Error err = 2;                              // 错误信息
 }
 
 message InsertUserFileMetaReq{
-  UserFileMeta userFileMeta = 1;              // 用户文件元信息
+  ListFileMeta userFileMeta = 1;              // 用户文件元信息
   FileMeta fileMeta = 2;                      // 文件本身元信息
   int64 userID = 3;                           // 用户 id
 }
 
 message InsertUserFileMetaResp {
-  UserFileMeta fileMeta = 1;                  // 文件元信息
+  ListFileMeta fileMeta = 1;                  // 文件元信息
   Error err = 2;                              // 错误信息
 }
 
@@ -200,5 +218,101 @@ message DeleteUserSessionResp {
   Error err = 1;            // 错误信息
 }
 
+// Group 相关
+
+message Group {
+  int64 ownerID = 1;
+  string name = 2;
+  string password = 3;
+  int64 createdAt = 4;
+  int32 status = 5;
+  int64 id = 6;
+}
+
+message CreateGroupReq {
+    Group group = 1;
+}
+
+message CreateGroupResp {
+  Group group = 1;
+  Error err = 2;
+}
+
+message UserIDGroupID {
+  int64 userID = 1;
+  int64 groupID = 2;
+}
+
+message GroupResp {
+  Group group = 1;
+  Error err = 2;
+}
+
+message CheckUserInGroupResp {
+  GroupUserInfo groupUserInfo = 1;
+  Error err = 2;
+}
+
+message ListGroupFileReq {
+  int64 groupID = 1;
+  string directory = 2;
+}
+
+message ListGroupFileResp {
+  repeated ListFileMeta groupFileMetaList = 1; // 组文件元信息
+  Error err = 2;                               // 错误信息
+}
+
+message InsertGroupFileReq {
+  ListFileMeta groupFileMeta = 1;             // 组文件元信息
+  FileMeta fileMeta = 2;                      // 文件本身元信息
+  int64 groupID = 3;
+}
+
+message InsertGroupFileResp {
+  ListFileMeta fileMeta = 1; // 组文件元信息
+  Error err = 2;
+}
+
+message DeleteGroupFileReq {
+ string directory = 1;
+ string fileName = 2;
+ int64 groupID = 3;
+}
+
+message DeleteGroupFileResp {
+  ListFileMeta fileMeta = 1;
+  Error err = 2;
+}
+
+message QueryGroupFileReq {
+  int64 groupID = 1;
+  string directory = 2;
+  string fileName = 3;
+}
+
+message QueryGroupFileResp {
+  ListFileMeta fileMeta = 1;
+  Error err = 2;
+}
+
+
+message GroupUserInfo {
+  string email = 1;
+  string name = 2;
+  int64 joinAt = 3;
+  int64 userID = 4;
+  int64 groupID = 5;
+}
+
+message ListGroupUserResp {
+  repeated GroupUserInfo users = 1;
+  Error err = 2;
+}
+
+message ListUserGroupResp {
+  repeated Group groups = 1;
+  Error err = 2;
+}
 
 

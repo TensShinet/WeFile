@@ -101,7 +101,7 @@ func Upload(c *gin.Context) {
 	logger.Infof("Upload filename:%v Hash:%v location:%v", head.Filename, tempFile.TotalHash(), savedFile.Location())
 	// 插入数据库
 	t := time.Now().Unix()
-	if err = insertUserFile(c, fileMeta, &db.FileMeta{
+	if err = insertFile(c, fileMeta, &db.FileMeta{
 		Hash:          savedFile.TotalHash(),
 		SamplingHash:  savedFile.SamplingHash(),
 		HashAlgorithm: "SHA256",
@@ -199,5 +199,5 @@ func TryFastUpload(c *gin.Context) {
 		c.JSON(http.StatusNotFound, common.Response404{Message: "File not found"})
 		return
 	}
-	_ = insertUserFile(c, fileMeta, queryFileResp.FileMeta)
+	_ = insertFile(c, fileMeta, queryFileResp.FileMeta)
 }

@@ -28,7 +28,7 @@ func (s *Service) InsertUser(ctx context.Context, req *proto.InsertUserReq, res 
 	logger.Infof("InsertUser id:%v", id)
 	u := req.User
 	modelUser := &model.User{}
-	if err = db.Where("email = ?", u.Email).Take(modelUser).Error; err == gorm.ErrRecordNotFound {
+	if err = db.Debug().Where("email = ?", u.Email).Take(modelUser).Error; err == gorm.ErrRecordNotFound {
 		if err = db.Create(&model.User{
 			ID:             id,
 			RoleID:         u.RoleID,
@@ -55,8 +55,8 @@ func (s *Service) InsertUser(ctx context.Context, req *proto.InsertUserReq, res 
 		return err
 	} else {
 		// 用户已经存在
-		logger.Infof("InsertUser failed, for the reason:%v", err)
-		res.Err = getProtoError(errConflict, common.DBConflictCode)
+		logger.Infof("InsertUser failed, for the reason:%v", common.ErrConflict)
+		res.Err = getProtoError(common.ErrConflict, common.DBConflictCode)
 		return nil
 	}
 

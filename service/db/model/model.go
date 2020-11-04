@@ -16,7 +16,7 @@ func Init() {
 		return
 	}
 	// 修改 charset
-	if err := db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4").AutoMigrate(&User{}, &File{}, &UserFile{}, &Session{}); err != nil {
+	if err := db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4").AutoMigrate(&User{}, &File{}, &UserFile{}, &Session{}, &Group{}, &GroupUser{}, &GroupFile{}); err != nil {
 		logger.Panicf("db AutoMigrate failed, for the reason:%v", err.Error())
 	}
 }
@@ -60,6 +60,36 @@ type File struct {
 	CreateAt      time.Time `gorm:"not null;default NOW()"`
 	UpdateAt      time.Time `gorm:"not null;default NOW()"`
 	Status        int       `gorm:"not null;default 0"`
+}
+
+// group 的创建信息
+type Group struct {
+	ID        int64     `gorm:"not null;primary_key:true"`
+	OwnerID   int64     `gorm:"not null;"`
+	Name      string    `gorm:"not null;index;size:64"`
+	Password  string    `gorm:"not null;size:64"`
+	CreatedAt time.Time `gorm:"not null;default NOW()"`
+	Status    int       `gorm:"not null;default 0"`
+}
+
+// 一个组内的文件
+type GroupFile struct {
+	ID           int64     `gorm:"not null;primary_key:true"`
+	GroupID      int64     `gorm:"not null;index:idx_group_id"`
+	Directory    string    `gorm:"not null;default /;size:2048"`
+	FileName     string    `gorm:"not null;size:255"`
+	Hash         string    `gorm:"not null;uniqueIndex;size:64"` // GroupID + Directory + FileName 的 hash 保证唯一性
+	FileID       int64     `gorm:"not null;default 0;"`
+	IsDirectory  bool      `gorm:"not null;default false;"`
+	UploadAt     time.Time `gorm:"not null;default NOW()"`
+	LastUpdateAt time.Time `gorm:"not null;default NOW()"`
+	Status       int       `gorm:"not null;default 0"`
+}
+
+type GroupUser struct {
+	UserID  int64     `gorm:"not null;primaryKey"`
+	GroupID int64     `gorm:"not null;primaryKey;index:idx_group_id"`
+	JoinAt  time.Time `gorm:"not null;default NOW()"`
 }
 
 // session 表基本不用了

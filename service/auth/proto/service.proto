@@ -39,6 +39,7 @@ message UploadFileMeta {
     int64 userID = 1;
     string directory = 2;
     string fileName = 3;
+    int64 groupID = 4;
 }
 
 message UploadJWTDecodeResp {

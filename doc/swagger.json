@@ -45,224 +45,6 @@
         }
       }
     },
-    "/download_address/{user_id}": {
-      "get": {
-        "description": "得到用户文件下载地址，并设置 jwt token",
-        "tags": [
-          "User"
-        ],
-        "summary": "GetDownloadAddress",
-        "operationId": "GetDownloadAddress",
-        "parameters": [
-          {
-            "type": "string",
-            "x-go-name": "Cookie",
-            "name": "cookie",
-            "in": "header",
-            "required": true
-          },
-          {
-            "type": "integer",
-            "format": "int64",
-            "x-go-name": "FileID",
-            "name": "file_id",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "string",
-            "x-go-name": "FileName",
-            "name": "file_name",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "string",
-            "x-go-name": "Directory",
-            "name": "directory",
-            "in": "query",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "$ref": "#/responses/AddressResponse"
-          },
-          "400": {
-            "$ref": "#/responses/BadRequestResponse"
-          },
-          "401": {
-            "$ref": "#/responses/UnauthorizedResponse"
-          },
-          "500": {
-            "$ref": "#/responses/ErrorResponse"
-          }
-        }
-      }
-    },
-    "/file_list/{user_id}": {
-      "get": {
-        "description": "用户目录下的文件",
-        "tags": [
-          "User"
-        ],
-        "summary": "GetUserFileList",
-        "operationId": "GetUserFileList",
-        "parameters": [
-          {
-            "type": "string",
-            "x-go-name": "Cookie",
-            "description": "存储 session id",
-            "name": "cookie",
-            "in": "header",
-            "required": true
-          },
-          {
-            "type": "string",
-            "x-go-name": "Directory",
-            "description": "目录\n比如 / /dir /dir1/dir2 注意一定要有 /",
-            "name": "directory",
-            "in": "query",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "$ref": "#/responses/FileListResponse"
-          },
-          "401": {
-            "$ref": "#/responses/UnauthorizedResponse"
-          },
-          "404": {
-            "$ref": "#/responses/NotFoundError"
-          },
-          "500": {
-            "$ref": "#/responses/ErrorResponse"
-          }
-        }
-      },
-      "post": {
-        "description": "创建一个新目录",
-        "tags": [
-          "User"
-        ],
-        "summary": "CreateDirectory",
-        "operationId": "CreateDirectory",
-        "parameters": [
-          {
-            "type": "string",
-            "x-go-name": "Cookie",
-            "name": "cookie",
-            "in": "header",
-            "required": true
-          },
-          {
-            "name": "Body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "required": [
-                "name",
-                "directory",
-                "csrf_token"
-              ],
-              "properties": {
-                "csrf_token": {
-                  "description": "csrf_token\n登录的时候才会更新",
-                  "type": "string",
-                  "x-go-name": "CSRFToken"
-                },
-                "directory": {
-                  "description": "目录\n比如 / /dir /dir1/dir2 注意一定要有 /",
-                  "type": "string",
-                  "x-go-name": "Directory"
-                },
-                "name": {
-                  "description": "在 Directory 下的文件名/目录名",
-                  "type": "string",
-                  "x-go-name": "Name"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "$ref": "#/responses/CreateDirectoryResponse"
-          },
-          "400": {
-            "$ref": "#/responses/BadRequestResponse"
-          },
-          "401": {
-            "$ref": "#/responses/UnauthorizedResponse"
-          },
-          "409": {
-            "$ref": "#/responses/ConflictError"
-          },
-          "500": {
-            "$ref": "#/responses/ErrorResponse"
-          }
-        }
-      },
-      "delete": {
-        "description": "删除用户目录下的文件/目录",
-        "tags": [
-          "User"
-        ],
-        "summary": "DeleteUserFile",
-        "operationId": "DeleteUserFile",
-        "parameters": [
-          {
-            "type": "string",
-            "x-go-name": "Cookie",
-            "name": "cookie",
-            "in": "header",
-            "required": true
-          },
-          {
-            "type": "string",
-            "x-go-name": "Name",
-            "description": "在 Directory 下的文件名/目录名",
-            "name": "name",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "string",
-            "x-go-name": "Directory",
-            "description": "目录\n比如 / /dir /dir1/dir2 注意一定要有 /",
-            "name": "directory",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "string",
-            "x-go-name": "CSRFToken",
-            "description": "csrf_token\n登录的时候才会更新",
-            "name": "csrf_token",
-            "in": "query",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "$ref": "#/responses/DeleteUserFileResponse"
-          },
-          "400": {
-            "$ref": "#/responses/BadRequestResponse"
-          },
-          "401": {
-            "$ref": "#/responses/UnauthorizedResponse"
-          },
-          "404": {
-            "$ref": "#/responses/NotFoundError"
-          },
-          "500": {
-            "$ref": "#/responses/ErrorResponse"
-          }
-        }
-      }
-    },
     "/multipart_upload": {
       "post": {
         "description": "分块上传接口",
@@ -568,14 +350,14 @@
         }
       }
     },
-    "/upload_address/{user_id}": {
+    "/user/download_address": {
       "get": {
-        "description": "得到用户上传地址，并设置 jwt token",
+        "description": "得到用户文件下载地址，并设置 jwt token",
         "tags": [
           "User"
         ],
-        "summary": "GetUploadAddress",
-        "operationId": "GetUploadAddress",
+        "summary": "GetDownloadAddress",
+        "operationId": "GetDownloadAddress",
         "parameters": [
           {
             "type": "string",
@@ -583,6 +365,696 @@
             "name": "cookie",
             "in": "header",
             "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "GroupID",
+            "description": "只有在 group 的时候才使用",
+            "name": "group_id",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "FileID",
+            "name": "file_id",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "FileName",
+            "name": "file_name",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "Directory",
+            "name": "directory",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/AddressResponse"
+          },
+          "400": {
+            "$ref": "#/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/user/file_list": {
+      "get": {
+        "description": "用户目录下的文件",
+        "tags": [
+          "User"
+        ],
+        "summary": "GetUserFileList",
+        "operationId": "GetUserFileList",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Cookie",
+            "description": "存储 session id",
+            "name": "cookie",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "GroupID",
+            "description": "组 id 只有在使用 组的时候才使用",
+            "name": "group_id",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "x-go-name": "Directory",
+            "description": "目录\n比如 / /dir /dir1/dir2 注意一定要有 /",
+            "name": "directory",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/FileListResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/responses/NotFoundError"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      },
+      "post": {
+        "description": "创建一个新目录",
+        "tags": [
+          "User"
+        ],
+        "summary": "CreateDirectory",
+        "operationId": "CreateDirectory",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Cookie",
+            "name": "cookie",
+            "in": "header",
+            "required": true
+          },
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "name",
+                "directory",
+                "csrf_token"
+              ],
+              "properties": {
+                "csrf_token": {
+                  "description": "csrf_token\n登录的时候才会更新",
+                  "type": "string",
+                  "x-go-name": "CSRFToken"
+                },
+                "directory": {
+                  "description": "目录\n比如 / /dir /dir1/dir2 注意一定要有 /",
+                  "type": "string",
+                  "x-go-name": "Directory"
+                },
+                "name": {
+                  "description": "在 Directory 下的文件名/目录名",
+                  "type": "string",
+                  "x-go-name": "Name"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/CreateDirectoryResponse"
+          },
+          "400": {
+            "$ref": "#/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "409": {
+            "$ref": "#/responses/ConflictError"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      },
+      "delete": {
+        "description": "删除用户目录下的文件/目录",
+        "tags": [
+          "User"
+        ],
+        "summary": "DeleteUserFile",
+        "operationId": "DeleteUserFile",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Cookie",
+            "name": "cookie",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "Name",
+            "description": "在 Directory 下的文件名/目录名",
+            "name": "name",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "Directory",
+            "description": "目录\n比如 / /dir /dir1/dir2 注意一定要有 /",
+            "name": "directory",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "CSRFToken",
+            "description": "csrf_token\n登录的时候才会更新",
+            "name": "csrf_token",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/DeleteFileResponse"
+          },
+          "400": {
+            "$ref": "#/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/responses/NotFoundError"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/user/group": {
+      "get": {
+        "description": "得到创建信息",
+        "tags": [
+          "Group"
+        ],
+        "summary": "GetGroup",
+        "operationId": "GetGroup",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Cookie",
+            "description": "存储 session id",
+            "name": "cookie",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "GroupID",
+            "description": "group id",
+            "name": "group_id",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/GroupResponse"
+          },
+          "400": {
+            "$ref": "#/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/responses/ForbiddenResponse"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      },
+      "post": {
+        "description": "创建 group",
+        "tags": [
+          "Group"
+        ],
+        "summary": "CreateGroup",
+        "operationId": "CreateGroup",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Cookie",
+            "description": "存储 session id",
+            "name": "cookie",
+            "in": "header",
+            "required": true
+          },
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "name",
+                "password"
+              ],
+              "properties": {
+                "name": {
+                  "description": "group 名字",
+                  "type": "string",
+                  "maxLength": 64,
+                  "minLength": 1,
+                  "x-go-name": "Name"
+                },
+                "password": {
+                  "description": "group 密码 用于检验 能否加入",
+                  "type": "string",
+                  "maxLength": 64,
+                  "minLength": 8,
+                  "x-go-name": "Password"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/GroupResponse"
+          },
+          "400": {
+            "$ref": "#/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      },
+      "delete": {
+        "description": "删除一个组，只允许创建者删除",
+        "tags": [
+          "Group"
+        ],
+        "summary": "DeleteGroup",
+        "operationId": "DeleteGroup",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Cookie",
+            "description": "存储 session id",
+            "name": "cookie",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "GroupID",
+            "description": "group id",
+            "name": "group_id",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/GroupResponse"
+          },
+          "400": {
+            "$ref": "#/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/user/group/download_address": {
+      "get": {
+        "description": "得到用户文件下载地址，并设置 jwt token",
+        "tags": [
+          "Group"
+        ],
+        "summary": "GetGroupDownloadAddress",
+        "operationId": "GetGroupDownloadAddress",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Cookie",
+            "name": "cookie",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "GroupID",
+            "description": "只有在 group 的时候才使用",
+            "name": "group_id",
+            "in": "query"
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "FileID",
+            "name": "file_id",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "FileName",
+            "name": "file_name",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "Directory",
+            "name": "directory",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/AddressResponse"
+          },
+          "400": {
+            "$ref": "#/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/user/group/file_list": {
+      "get": {
+        "description": "得到用户上传地址，并设置 jwt token",
+        "tags": [
+          "Group"
+        ],
+        "summary": "GetGroupFileList",
+        "operationId": "GetGroupFileList",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Cookie",
+            "description": "存储 session id",
+            "name": "cookie",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "GroupID",
+            "description": "组 id 只有在使用 组的时候才使用",
+            "name": "group_id",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "x-go-name": "Directory",
+            "description": "目录\n比如 / /dir /dir1/dir2 注意一定要有 /",
+            "name": "directory",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/FileListResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/responses/NotFoundError"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      },
+      "post": {
+        "description": "创建一个新目录",
+        "tags": [
+          "Group"
+        ],
+        "summary": "CreateGroupDirectory",
+        "operationId": "CreateGroupDirectory",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Cookie",
+            "name": "cookie",
+            "in": "header",
+            "required": true
+          },
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "group_id",
+                "name",
+                "directory",
+                "csrf_token"
+              ],
+              "properties": {
+                "csrf_token": {
+                  "description": "csrf_token\n登录的时候才会更新",
+                  "type": "string",
+                  "x-go-name": "CSRFToken"
+                },
+                "directory": {
+                  "description": "目录\n比如 / /dir /dir1/dir2 注意一定要有 /",
+                  "type": "string",
+                  "x-go-name": "Directory"
+                },
+                "group_id": {
+                  "description": "group id",
+                  "type": "integer",
+                  "format": "int64",
+                  "x-go-name": "GroupID"
+                },
+                "name": {
+                  "description": "在 Directory 下的文件名/目录名",
+                  "type": "string",
+                  "x-go-name": "Name"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/CreateDirectoryResponse"
+          },
+          "400": {
+            "$ref": "#/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/responses/ForbiddenResponse"
+          },
+          "409": {
+            "$ref": "#/responses/ConflictError"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      },
+      "delete": {
+        "description": "删除用户目录下的文件/目录",
+        "tags": [
+          "Group"
+        ],
+        "summary": "DeleteGroupFile",
+        "operationId": "DeleteGroupFile",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Cookie",
+            "name": "cookie",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "GroupID",
+            "description": "group id",
+            "name": "group_id",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "Name",
+            "description": "在 Directory 下的文件名/目录名",
+            "name": "name",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "Directory",
+            "description": "目录\n比如 / /dir /dir1/dir2 注意一定要有 /",
+            "name": "directory",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "CSRFToken",
+            "description": "csrf_token\n登录的时候才会更新",
+            "name": "csrf_token",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/DeleteFileResponse"
+          },
+          "400": {
+            "$ref": "#/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/responses/NotFoundError"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/user/group/member_list": {
+      "get": {
+        "description": "得到组成员",
+        "tags": [
+          "Group"
+        ],
+        "summary": "GetGroupMemberList",
+        "operationId": "GetGroupMemberList",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Cookie",
+            "description": "存储 session id",
+            "name": "cookie",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "GroupID",
+            "description": "group id",
+            "name": "group_id",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/GroupMemberListResponse"
+          },
+          "400": {
+            "$ref": "#/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/responses/ForbiddenResponse"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/user/group/upload_address": {
+      "get": {
+        "description": "得到用户上传地址，并设置 jwt token",
+        "tags": [
+          "Group"
+        ],
+        "summary": "GetGroupUploadAddress",
+        "operationId": "GetGroupUploadAddress",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Cookie",
+            "name": "cookie",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "GroupID",
+            "description": "只有在 group 的时候才使用",
+            "name": "group_id",
+            "in": "query"
           },
           {
             "type": "string",
@@ -610,6 +1082,144 @@
           },
           "401": {
             "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      }
+    },
+    "/user/group_list": {
+      "get": {
+        "description": "得到用户的所有组",
+        "tags": [
+          "Group"
+        ],
+        "summary": "GetGroupList",
+        "operationId": "GetGroupList",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Cookie",
+            "description": "存储 session id",
+            "name": "cookie",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "GroupID",
+            "name": "group_id",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/GetGroupListResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      },
+      "post": {
+        "description": "加入一个组",
+        "tags": [
+          "Group"
+        ],
+        "summary": "JoinGroup",
+        "operationId": "JoinGroup",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Cookie",
+            "description": "存储 session id",
+            "name": "cookie",
+            "in": "header",
+            "required": true
+          },
+          {
+            "name": "Body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "required": [
+                "group_id",
+                "password"
+              ],
+              "properties": {
+                "group_id": {
+                  "type": "integer",
+                  "format": "int64",
+                  "x-go-name": "GroupID"
+                },
+                "password": {
+                  "type": "string",
+                  "x-go-name": "Password"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/GroupResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "403": {
+            "$ref": "#/responses/ForbiddenResponse"
+          },
+          "404": {
+            "$ref": "#/responses/NotFoundError"
+          },
+          "409": {
+            "$ref": "#/responses/ConflictError"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      },
+      "delete": {
+        "description": "退出一个组",
+        "tags": [
+          "Group"
+        ],
+        "summary": "QuitGroup",
+        "operationId": "LeaveGroup",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Cookie",
+            "description": "存储 session id",
+            "name": "cookie",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "GroupID",
+            "name": "group_id",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/GroupResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "404": {
+            "$ref": "#/responses/NotFoundError"
           },
           "500": {
             "$ref": "#/responses/ErrorResponse"
@@ -699,6 +1309,63 @@
           }
         }
       }
+    },
+    "/user/upload_address": {
+      "get": {
+        "description": "得到用户上传地址，并设置 jwt token",
+        "tags": [
+          "User"
+        ],
+        "summary": "GetUploadAddress",
+        "operationId": "GetUploadAddress",
+        "parameters": [
+          {
+            "type": "string",
+            "x-go-name": "Cookie",
+            "name": "cookie",
+            "in": "header",
+            "required": true
+          },
+          {
+            "type": "integer",
+            "format": "int64",
+            "x-go-name": "GroupID",
+            "description": "只有在 group 的时候才使用",
+            "name": "group_id",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "x-go-name": "FileName",
+            "description": "文件名",
+            "name": "file_name",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "Directory",
+            "description": "目录\n比如 / /dir /dir1/dir2 注意一定要有 /",
+            "name": "directory",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/AddressResponse"
+          },
+          "400": {
+            "$ref": "#/responses/BadRequestResponse"
+          },
+          "401": {
+            "$ref": "#/responses/UnauthorizedResponse"
+          },
+          "500": {
+            "$ref": "#/responses/ErrorResponse"
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -748,6 +1415,65 @@
           "type": "string",
           "format": "date-time",
           "x-go-name": "UploadAt"
+        }
+      },
+      "x-go-package": "github.com/TensShinet/WeFile/service/base/handler"
+    },
+    "Group": {
+      "type": "object",
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "CreatedAt"
+        },
+        "group_id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "GroupID"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "owner_id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "OwnerID"
+        },
+        "status": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "Status"
+        }
+      },
+      "x-go-package": "github.com/TensShinet/WeFile/service/base/handler"
+    },
+    "GroupUserInfo": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "x-go-name": "Email"
+        },
+        "group_id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "GroupID"
+        },
+        "join_at": {
+          "type": "string",
+          "format": "date-time",
+          "x-go-name": "JoinAt"
+        },
+        "name": {
+          "type": "string",
+          "x-go-name": "Name"
+        },
+        "user_id": {
+          "type": "integer",
+          "format": "int64",
+          "x-go-name": "UserID"
         }
       },
       "x-go-package": "github.com/TensShinet/WeFile/service/base/handler"
@@ -954,7 +1680,7 @@
         }
       }
     },
-    "DeleteUserFileResponse": {
+    "DeleteFileResponse": {
       "description": "删除的信息",
       "schema": {
         "type": "object",
@@ -1006,6 +1732,29 @@
         "message": {
           "type": "string"
         }
+      }
+    },
+    "GetGroupListResponse": {
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/Group"
+        }
+      }
+    },
+    "GroupMemberListResponse": {
+      "description": "GroupMemberListResponse",
+      "schema": {
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/GroupUserInfo"
+        }
+      }
+    },
+    "GroupResponse": {
+      "description": "GroupResponse",
+      "schema": {
+        "$ref": "#/definitions/Group"
       }
     },
     "MultipartUploadInitResponse": {
