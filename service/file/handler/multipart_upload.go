@@ -270,7 +270,7 @@ func CompleteUpload(c *gin.Context) {
 
 	t := time.Now().Unix()
 	logger.Debugf("savedFile.SamplingHash:%v savedFile.Size():%v savedFile.Location():%v", savedFile.SamplingHash(), savedFile.Size(), savedFile.Location())
-	if err = insertUserFile(c, fileMeta, &db.FileMeta{
+	if err = insertFile(c, fileMeta, &db.FileMeta{
 		Hash:          savedFile.TotalHash(),
 		SamplingHash:  savedFile.SamplingHash(),
 		HashAlgorithm: "SHA256",

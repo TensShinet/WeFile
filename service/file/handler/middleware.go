@@ -3,6 +3,7 @@ package handler
 import (
 	auth "github.com/TensShinet/WeFile/service/auth/proto"
 	"github.com/TensShinet/WeFile/service/common"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -43,6 +44,9 @@ func UploadAuthorizeMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
+
+		spew.Dump("res.FileMeta ", res.FileMeta)
+
 		c.Set(defaultAuthKey, res.FileMeta)
 		c.Next()
 	}
