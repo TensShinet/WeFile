@@ -1,12 +1,15 @@
 package common
 
-import "fmt"
+import (
+	"errors"
+)
 
 const (
 	DBNotFoundCode   = 404
 	UnauthorizedCode = 401
 	DBConflictCode   = 409
 	DBServiceError   = 500
+	DBForbiddenCode  = 403
 
 	// role id
 	GeneralUserRoleID = 10000
@@ -17,7 +20,11 @@ const (
 )
 
 var (
-	ErrConflict = fmt.Errorf("conflict error")
+	ErrConflict          = errors.New("conflict error")
+	ErrGroupNotExist     = errors.New("group doesn't exist")
+	ErrUserJoinedGroup   = errors.New("user joined group")
+	ErrNotOwner          = errors.New("user is not the owner of group")
+	ErrParentDirNotFound = errors.New("parent directory doesn't exist")
 )
 
 // Sever Error

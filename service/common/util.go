@@ -19,6 +19,8 @@ func SetSimpleResponse(c *gin.Context, code int, message string) {
 		c.JSON(code, AcceptedResponse{Message: message})
 	case http.StatusConflict:
 		c.JSON(code, ConflictError{Message: message})
+	case http.StatusForbidden:
+		c.JSON(code, ForbiddenResponse{Message: message})
 	default:
 		c.JSON(code, ErrorResponse{Message: message})
 	}
