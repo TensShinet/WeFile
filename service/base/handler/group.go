@@ -30,6 +30,10 @@ type CreateGroupParam struct {
 		// maximum length: 64
 		// Required: true
 		Password string `json:"password"`
+		// csrf_token
+		// 登录的时候才会更新
+		// Required: true
+		CSRFToken string `json:"csrf_token"`
 	}
 }
 

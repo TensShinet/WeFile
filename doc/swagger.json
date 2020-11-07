@@ -652,9 +652,15 @@
               "type": "object",
               "required": [
                 "name",
-                "password"
+                "password",
+                "csrf_token"
               ],
               "properties": {
+                "csrf_token": {
+                  "description": "csrf_token\n登录的时候才会更新",
+                  "type": "string",
+                  "x-go-name": "CSRFToken"
+                },
                 "name": {
                   "description": "group 名字",
                   "type": "string",
@@ -1105,13 +1111,6 @@
             "name": "cookie",
             "in": "header",
             "required": true
-          },
-          {
-            "type": "integer",
-            "format": "int64",
-            "x-go-name": "GroupID",
-            "name": "group_id",
-            "in": "query"
           }
         ],
         "responses": {

@@ -16,7 +16,7 @@ type GetGroupListResponse struct {
 	Groups []*Group `json:"groups"`
 }
 
-// GetGroupListResponse
+// GetGroupList
 //
 // swagger:parameters GetGroupList
 type GetGroupListParam struct {
@@ -24,8 +24,6 @@ type GetGroupListParam struct {
 	// in: header
 	// Required: true
 	Cookie string `json:"cookie"`
-	// in: query
-	GroupID int64 `json:"group_id"`
 }
 
 // swagger:route GET /user/group_list Group GetGroupList
