@@ -120,6 +120,12 @@ type GetGroupParam struct {
 	//
 	// Required: true
 	GroupID int64 `json:"group_id"`
+	// csrf_token
+	//
+	// 登录的时候才会更新
+	//
+	// GET 方法不需要，其他都需要
+	CSRFToken string `json:"csrf_token"`
 }
 
 // swagger:route GET /user/group Group GetGroup

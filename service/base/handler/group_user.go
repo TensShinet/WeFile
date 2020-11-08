@@ -81,6 +81,11 @@ type JoinGroupParam struct {
 		GroupID int64 `json:"group_id"`
 		// required: true
 		Password string `json:"password"`
+		// csrf_token
+		//
+		// 登录的时候才会更新
+		// Required: true
+		CSRFToken string `json:"csrf_token"`
 	}
 }
 
@@ -164,6 +169,11 @@ type LeaveGroupParam struct {
 	// in: query
 	// required: true
 	GroupID int64 `json:"group_id"`
+	// csrf_token
+	//
+	// 登录的时候才会更新
+	// Required: true
+	CSRFToken string `json:"csrf_token"`
 }
 
 // swagger:route DELETE /user/group_list Group LeaveGroup

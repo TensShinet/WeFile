@@ -609,6 +609,13 @@
             "name": "group_id",
             "in": "query",
             "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "CSRFToken",
+            "description": "csrf_token\n\n登录的时候才会更新\n\nGET 方法不需要，其他都需要",
+            "name": "csrf_token",
+            "in": "query"
           }
         ],
         "responses": {
@@ -718,6 +725,13 @@
             "name": "group_id",
             "in": "query",
             "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "CSRFToken",
+            "description": "csrf_token\n\n登录的时候才会更新\n\nGET 方法不需要，其他都需要",
+            "name": "csrf_token",
+            "in": "query"
           }
         ],
         "responses": {
@@ -1017,6 +1031,13 @@
             "name": "group_id",
             "in": "query",
             "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "CSRFToken",
+            "description": "csrf_token\n\n登录的时候才会更新\n\nGET 方法不需要，其他都需要",
+            "name": "csrf_token",
+            "in": "query"
           }
         ],
         "responses": {
@@ -1148,9 +1169,15 @@
               "type": "object",
               "required": [
                 "group_id",
-                "password"
+                "password",
+                "csrf_token"
               ],
               "properties": {
+                "csrf_token": {
+                  "description": "csrf_token\n\n登录的时候才会更新",
+                  "type": "string",
+                  "x-go-name": "CSRFToken"
+                },
                 "group_id": {
                   "type": "integer",
                   "format": "int64",
@@ -1206,6 +1233,14 @@
             "format": "int64",
             "x-go-name": "GroupID",
             "name": "group_id",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "x-go-name": "CSRFToken",
+            "description": "csrf_token\n\n登录的时候才会更新",
+            "name": "csrf_token",
             "in": "query",
             "required": true
           }
